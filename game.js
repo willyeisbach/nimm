@@ -66,6 +66,15 @@ window.Game = window.Game || {};
     lock: false        // true während Animation/KI-Zug (spätere Tasks)
   };
 
+  function firstNonEmptyHeap(heaps) {
+    for (let i = 0; i < heaps.length; i++) {
+      if (heaps[i] >= 1) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
   /**
    * Game.isLocked() → boolean (Task 11).
    * Zentrale Abfrage, ob während Animation/KI-Zug gesperrt ist.
@@ -87,6 +96,11 @@ window.Game = window.Game || {};
     for (let i = 0; i < count; i++) {
       heaps[i] = randomInt(s.minSteine, s.maxSteine);
     }
+    // minSteine=0 permits empty heaps, but a new game must remain playable.
+    // With the validated maxSteine >= 1, one fallback stone stays in bounds.
+    if (s.minSteine === 0 && s.maxSteine >= 1 && firstNonEmptyHeap(heaps) === -1) {
+      heaps[0] = 1;
+    }
     return heaps;
   };
 
@@ -100,6 +114,9 @@ window.Game = window.Game || {};
     // Generation hochzählen (Fix 2): macht alle ausstehenden Animation-/KI-
     // Callbacks aus dem vorherigen Spiel stale (newHeaps() läuft nur über start()).
     Game._moveSeq = (Game._moveSeq || 0) + 1;
+    // Erst alte KI-/Animationsarbeit abbrechen, solange der alte Lock noch
+    // sichtbar ist; danach darf der neue Spielzustand den Lock zurücksetzen.
+    Game.cancelAIMove();
     // Defensive (arch §3.7): crypto-Pfad kann in exotischen Umgebungen werfen
     // (z. B. min > max durch ungültige Konfiguration) → sauber abbrechen.
     try {
@@ -112,11 +129,10 @@ window.Game = window.Game || {};
     s.lastMove = null;
     s.lock = false;
     s.allowed = window.Nim.parseAllowed(s.rule, s.ownList);
-    s.selectedHeap = 0; // 1 Haufen → automatisch Ziel; mehrere → erster
+    s.selectedHeap = firstNonEmptyHeap(s.heaps); // leere Haufen sind kein Ziel
 
-    // KI-Anschluss (Task 14): ausstehenden KI-Job räumen (neues Spiel!),
-    // dann bei KI-Start automatisch den ersten KI-Zug auslösen.
-    Game.cancelAIMove();
+    // KI-Anschluss (Task 14): nach dem neuen Render bei KI-Start automatisch
+    // den ersten KI-Zug auslösen.
     Game.render();
     Game.maybeAIMove();
     return s;
@@ -138,13 +154,17 @@ window.Game = window.Game || {};
     if (idx < 0 || idx >= s.heaps.length) {
       return;
     }
+    if (s.heaps[idx] < 1) {
+      return;
+    }
     s.selectedHeap = idx;
     Game.renderSelection();
     Game.updateButtonState();
   };
 
   /**
-   * Game.renderSelection() → spiegelt selectedHeap als "selected"-Klasse.
+   * Game.renderSelection() → spiegelt selectedHeap als "selected"-Klasse
+   * und aria-pressed-Attribut.
    * Nutzt das bestehende DOM (wird von render() + selectHeap() aufgerufen).
    */
   Game.renderSelection = function () {
@@ -152,10 +172,13 @@ window.Game = window.Game || {};
     const heaps = document.querySelectorAll("#heaps .heap");
     heaps.forEach(function (el) {
       const i = parseInt(el.dataset.heapIndex, 10);
-      if (i === s.selectedHeap) {
-        el.classList.add("selected");
+      const empty = el.classList.contains("heap--empty");
+      const selected = i === s.selectedHeap && !empty;
+      el.classList.toggle("selected", selected);
+      if (empty) {
+        el.removeAttribute("aria-pressed");
       } else {
-        el.classList.remove("selected");
+        el.setAttribute("aria-pressed", selected ? "true" : "false");
       }
     });
   };
@@ -204,15 +227,19 @@ window.Game = window.Game || {};
    */
   Game.updateButtonState = function () {
     const btn = document.querySelector("#draw-btn");
+    const input = document.querySelector("#amount-input");
     const err = document.querySelector("#input-error");
-    const valid = Game.validateInput();
+    const locked = Game.isLocked();
+    const valid = !locked && Game.validateInput();
+    const hasInput = input && String(input.value).trim() !== "";
     if (btn) {
       btn.disabled = !valid;
       Game._setAriaDisabled(btn, !valid);
     }
     if (err) {
-      err.textContent = valid ? "" : "Nicht gültig für den gewählten Haufen.";
-      err.hidden = valid;
+      const showError = !locked && !valid && hasInput;
+      err.textContent = showError ? "Nicht gültig für den gewählten Haufen." : "";
+      err.hidden = !showError;
     }
   };
 
@@ -224,16 +251,27 @@ window.Game = window.Game || {};
   Game.render = function () {
     const s = Game.state;
 
+    // Eine Auswahl darf nie auf einem leeren Haufen stehen bleiben. -1 bleibt
+    // als bewusste "keine Auswahl" nach einem Zug für mehrere Haufen erhalten.
+    if (s.selectedHeap >= 0 &&
+        s.selectedHeap < s.heaps.length &&
+        s.heaps[s.selectedHeap] < 1) {
+      s.selectedHeap = firstNonEmptyHeap(s.heaps);
+    }
+
     // 1. Haufen + Steine
     const heapsEl = document.querySelector("#heaps");
     heapsEl.textContent = "";
     s.heaps.forEach(function (size, i) {
       const heap = document.createElement("div");
-      heap.className = "heap";
+      const empty = size < 1;
+      heap.className = empty ? "heap heap--empty" : "heap";
       heap.dataset.heapIndex = String(i);
-      heap.tabIndex = 0;                 // Tastaturfokus (arch §3.6)
-      heap.setAttribute("role", "button");
-      heap.setAttribute("aria-pressed", i === s.selectedHeap ? "true" : "false");
+      heap.tabIndex = empty ? -1 : 0;    // leere Haufen nicht fokussierbar
+      heap.setAttribute("role", empty ? "none" : "button");
+      if (!empty) {
+        heap.setAttribute("aria-pressed", i === s.selectedHeap ? "true" : "false");
+      }
 
       const label = document.createElement("p");
       label.className = "heap-label";
@@ -314,6 +352,12 @@ window.Game = window.Game || {};
     function finalize() {
       if (done) { return; }
       done = true;
+      // Bei animationend den Safety-Net-Timer sofort aufräumen. Der
+      // Timeout-Callback setzt den Handle selbst vor finalize() zurück.
+      if (seq === Game._moveSeq && Game._animTimer !== undefined) {
+        clearTimeout(Game._animTimer);
+        Game._animTimer = undefined;
+      }
       // Defensive (Fix 2): Zug ist nicht mehr aktuell – z. B. start()/newGame()/
       // applyOptions() ist im ~1,3 s-Animation-Fenster gefeuert → abbrechen,
       // OHNE den Haufen zu subtrahieren (verhindert Zustandskorruption).
@@ -339,6 +383,15 @@ window.Game = window.Game || {};
 
       // f) Callback (Task 12: Zugübergabe/Sieg-Check).
       if (typeof cb === "function") { cb(); }
+    }
+
+    // Bei reduzierter Bewegung gibt es wegen `animation: none` kein
+    // animationend-Event. Den Endzustand deshalb direkt herstellen.
+    const reducedMotion = typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) {
+      finalize();
+      return;
     }
 
     // Primär: animationend auf dem ersten Ziel-Stein (bubbling).
@@ -391,7 +444,7 @@ window.Game = window.Game || {};
       s.selectedHeap = -1;
       const input = document.querySelector("#amount-input");
       if (input) {
-        input.value = "1";
+        input.value = "";
       }
       const err = document.querySelector("#input-error");
       if (err) {
@@ -477,10 +530,10 @@ window.Game = window.Game || {};
     if (overlay) {
       overlay.hidden = true;
     }
-    // Eingabe zurücksetzen, damit der neue Startspieler mit Wert 1 beginnt.
+    // Eingabe leeren (req §5.3), damit kein alter Zug vorbefüllt bleibt.
     const input = document.querySelector("#amount-input");
     if (input) {
-      input.value = "1";
+      input.value = "";
     }
     Game.start();
   };
@@ -1014,12 +1067,10 @@ window.Game = window.Game || {};
       Game._animTimer = undefined;
     }
     const s = Game.state;
-    if (s.lock === true) {
-      s.lock = false;
-      const input = document.querySelector("#amount-input");
-      if (input) { input.disabled = false; }
-      Game.updateButtonState();
-    }
+    s.lock = false;
+    const input = document.querySelector("#amount-input");
+    if (input) { input.disabled = false; }
+    Game.updateButtonState();
   };
 
   /**
@@ -1072,7 +1123,12 @@ window.Game = window.Game || {};
 
     // Denk-Delay: 600 + random×300 → [600, 900) ms (req §5.5).
     const delay = 600 + Math.random() * 300;
-    Game._aiTimer = setTimeout(function () {
+    const seq = Game._moveSeq;
+    const timer = setTimeout(function () {
+      // Ein verspäteter Callback darf keinen Timer des neuen Spiels löschen.
+      if (seq !== Game._moveSeq) {
+        return;
+      }
       Game._aiTimer = undefined;
 
       // Defensive: erneut prüfen, dass noch die KI dran ist.
@@ -1098,10 +1154,10 @@ window.Game = window.Game || {};
           // Zugübergabe.
           s.active = (s.active === 1) ? 2 : 1;
 
-          // Eingabe zurücksetzen (analog executeMove).
+          // Eingabe leeren (analog executeMove, req §5.3).
           s.selectedHeap = -1;
           const inp = document.querySelector("#amount-input");
-          if (inp) { inp.value = "1"; }
+          if (inp) { inp.value = ""; }
           const err = document.querySelector("#input-error");
           if (err) {
             err.hidden = true;
@@ -1131,6 +1187,7 @@ window.Game = window.Game || {};
         }
       }
     }, delay);
+    Game._aiTimer = timer;
   };
 
   // Start: einmalig Events binden (DOM ist beim Laden vorhanden).

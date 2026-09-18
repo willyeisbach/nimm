@@ -1,0 +1,21 @@
+Ich möchte ein nimm Spiel als Browserbasiertes Spiel programmieren. Also statisches html, ggf. mit css und java skripten. Ich möchte dass du erstmal die Anforderungen festhältst in einer requirements.md Datei in diesem Ordner.
+Zwei Spieler spielen Abwechselnd.
+Man kann als Startparameter wählen
+* maximlae Haufenzahl
+* Zugregeln: klassich (man kann in jedem haufe so viele Steine nehmen wie man will), 4er-Nimm (1,2,3,4), oder eine kommaseparierte Liste von nehmbaren Zahlen kann man selber eingeben. 1 muss in dieser Liste sein (validierung).
+* maximale teine pro Haufen
+* minimale Steine Pro haufen
+* Gegenspielerauswahl (radiobox): Mensch, Baxi, Ducola, Muisa
+* Namen für Mensch Spieler 1 und Spieler 2.
+
+Optionen kann man per Zahnrad am oberen rechten rand ändern. Änderung übernehmen startet neues Spiel. Default ist 1 Haufen maximal, 10 bis 20 Steine, 4er-Nimm.
+Es können immer nur Steine aus einem haufen genommen werden.
+Wer den letzten Stein nimmt gewinnt.
+Auf dem Hauptbildschirm  sieht man den Haufen und ein Eingabefeld für die zu nehmenden Steine und außerdem welcher Spieler dran. ist. Das Eingabefeld muss Zugzahl validieren. Außerdem gibt es einen Button mit dem man ziehen kann (nur bei valider Zugzahl freigeschaltet).
+Außerdem wir angezeigt Was der letzte Spieler zuletzt gezogen hat.
+Wenn jemand zieht kommt eine kurze Animation wie die Steine Blinken, die weggenommen werden. 
+Wenn der letzte Stein gezogen worden ist kommt eine Gratualtion an den Sieger. und ein Button für neues Spiel
+Zu den Computerspielern:
+* Baxi spielt immer optimal (Grundy-Werte für jeden Haufen gemäß der Regeln berechnen, Zerlegung ins zweiersystem der Werte über die einzelnen Haufen und herstellung von bitparität nach dem zug, falls möglich. Wenn er in einer Verliererposition zieht er die kleinstmögliche Zahl im größten Haufen).
+* Ducola spielt bei >10 Steinen so, dass sie falls möglich immer dem Gegner die Gewinn Möglichkeit lässt, ab 10 Steinen dann aber spieltheoretisch optimal
+* Munias spielt bei > 5 Steinen zufällig, ab 5 spieltheoretisch optimal.

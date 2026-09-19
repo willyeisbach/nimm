@@ -197,14 +197,17 @@ Der eingegebene Wert ist **gültig**, wenn **alle** Bedingungen gelten:
 - Danach werden die Steine aus dem Haufen entfernt, die Anzeige aktualisiert sich.
 - Während der Animation sind Eingabe und Button **gesperrt** (kein Doppelzug).
 
-### 5.6 Sieg & neues Spiel
+### 5.6 Sieg & noch mal!
 
 - Wird der **letzte Stein** genommen:
   - **Gratulation** an den Sieger (Name prominent anzeigen, z. B.
     `🎉 Gewonnen hat <Name>!`).
-  - **Button „Neues Spiel"** → setzt das Spiel mit den **aktuell gültigen**
-    Parameter-Einstellungen zurück (neue zufällige Haufen, **zufälliger** Spieler
-    beginnt).
+  - **Primärer Button „Noch mal!"** (identisch beschriftet wie die Toolbar)
+    → startet eine neue Runde mit den **aktuell gültigen** Parameter-Einstellungen
+    (neue zufällige Haufen, **zufälliger** Spieler beginnt).
+  - Optional: kleiner „Fertig"-Button, der NUR das Overlay ausblendet
+    (Brett bleibt stehen) — kein dritter Button, keine Optionen im Overlay
+    (Zahnrad oben bleibt).
 - Optional: kurze Hervorhebung des Siegers.
 
 ---
@@ -257,7 +260,7 @@ Technologie-Spektrum, Datei-Organisation, Kompatibilitätsregeln) ist in
       wenn die Eingabe für den gewählten Haufen legal ist.
 - [ ] Aktiver Spieler und letzter Zug werden angezeigt.
 - [ ] Zu entfernende Steine **blinken**, dann verschwinden sie.
-- [ ] **Letzter Stein** → Gratulation + „Neues Spiel"-Button (neues Spiel, alte
+- [ ] **Letzter Stein** → Gratulation + „Noch mal!"-Button (neue Runde,
       Parameter beibehalten).
 - [ ] **Baxi** zwingt bei Gewinnposition die NIM-Summe auf 0; in Verliererposition
       nimmt `1` aus dem größten Haufen.
@@ -307,10 +310,12 @@ wie ein Spiel anfühlen, nicht wie ein Formular.
   zurück.
   Funktioniert auch, während die KI gerade „denkt".
 - **Startspieler wählbar:** Zufällig (Default) / Spieler 1 / Spieler 2.
-- **Neue Runde:** Immer sichtbarer Button, ohne Overlay und ohne Parameter-
-  Änderung (Options-Overwrite bleibt unverändert).
-- **Sieg-Overlay** mit Gesicht, Botschaft und „Zurück zum Spiel" (Spielzustand
-  bleibt sichtbar).
+- **Noch mal!:** Immer sichtbarer Toolbar-Button, ohne Overlay und ohne
+  Parameter-Änderung (Options-Overwrite bleibt unverändert); der primäre
+  Sieg-Overlay-Button heißt identisch „Noch mal!" (neue Runde, alte Parameter).
+- **Sieg-Overlay** mit Gesicht, Botschaft, einem primären „Noch mal!" und
+  optionalem kleinem „Fertig" (blendet nur das Overlay aus, Brett bleibt stehen);
+  kein dritter Button, keine „Optionen öffnen" im Overlay (Zahnrad oben bleibt).
 - **Konfetti** beim Sieg (DOM-only, keine Assets, keine Bibliothek).
 - **Rosinen-Optik:** Haufen sehen aus wie Rosinen (Braunton, unregelmäßig),
   großer Touch-Radius, farbenfrohe Kindertypografie.

@@ -812,7 +812,7 @@ window.Game = window.Game || {};
     const btn = document.createElement("button");
     btn.id = "new-game-btn";
     btn.type = "button";
-    btn.textContent = "Neues Spiel";
+    btn.textContent = "Noch mal!";
     btn.addEventListener("click", function () {
       Game.newGame();
     });
@@ -821,7 +821,7 @@ window.Game = window.Game || {};
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
     closeBtn.className = "win-secondary";
-    closeBtn.textContent = "Zurück zum Spiel";
+    closeBtn.textContent = "Fertig";
     closeBtn.addEventListener("click", function () {
       overlay.hidden = true;
       const target = Game._winLastFocused;
@@ -831,16 +831,6 @@ window.Game = window.Game || {};
       Game._winLastFocused = null;
     });
     actions.appendChild(closeBtn);
-
-    const optBtn = document.createElement("button");
-    optBtn.type = "button";
-    optBtn.className = "win-secondary";
-    optBtn.textContent = "Optionen öffnen";
-    optBtn.addEventListener("click", function () {
-      overlay.hidden = true;
-      Game.openOptions();
-    });
-    actions.appendChild(optBtn);
 
     overlay.appendChild(actions);
     overlay.hidden = false;
@@ -879,7 +869,7 @@ window.Game = window.Game || {};
 
   /**
    * Game.newGame() → void
-   * Handler des Buttons „Neues Spiel" (und „Neue Runde"):
+   * Handler des Buttons „Noch mal!" (Toolbar und Sieg-Overlay):
    * - Win-Overlay ausblenden, Gesichte/Bubbles/Undo-Stack zurücksetzen,
    * - Spiel mit DEN aktuellen Parametern neu starten.
    */
@@ -1386,7 +1376,7 @@ window.Game = window.Game || {};
       undoBtn.addEventListener("click", function () { Game.undoMove(); });
     }
 
-    // Neue Runde.
+    // „Noch mal!" (neue Runde).
     const newRoundBtn = document.querySelector("#new-round-btn");
     if (newRoundBtn) {
       newRoundBtn.addEventListener("click", function () { Game.newGame(); });

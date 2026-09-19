@@ -20,6 +20,17 @@
     <!-- Issue #1: Runde wartet auf „Los!" – kein Modal, Haufen bleiben sichtbar -->
     <div class="start-overlay" id="start-overlay" role="region" aria-label="Runde starten" hidden>
       <p class="start-overlay-who" id="start-who"></p>
+      <!-- Issue #6: Anzeigennamen als ersten Schritt des Overlays setzen -->
+      <div class="start-names" id="start-names" hidden>
+        <label class="start-name-field">
+          <span>Dein Name</span>
+          <input type="text" id="start-name1" placeholder="z. B. Lina" autocomplete="off">
+        </label>
+        <label class="start-name-field">
+          <span>Name vom Gegner</span>
+          <input type="text" id="start-name2" placeholder="Name oder KI" autocomplete="off">
+        </label>
+      </div>
       <button type="button" id="start-go-btn" class="start-go-btn">Los! 🚀</button>
     </div>
 
@@ -54,6 +65,17 @@
 
   <div class="options" id="options-dialog" hidden role="dialog" aria-modal="true" aria-labelledby="options-title">
     <h2 id="options-title">Optionen</h2>
+
+    <!-- Issue #6: Anzeigennamen zuerst (vor Haufen/Regeln), klare Labels -->
+    <div class="opt-field">
+      <label for="opt-name1">Dein Name</label>
+      <input type="text" id="opt-name1" value="Spieler 1" autocomplete="off">
+    </div>
+
+    <div class="opt-field">
+      <label for="opt-name2">Name vom Gegner</label>
+      <input type="text" id="opt-name2" value="Spieler 2" autocomplete="off">
+    </div>
 
     <div class="opt-field">
       <label for="opt-max-heaps">Maximale Haufenzahl</label>
@@ -108,16 +130,6 @@
         <input type="checkbox" id="opt-undo">
         <span>Rückgängig-Button im Spiel aktivieren</span>
       </label>
-    </div>
-
-    <div class="opt-field">
-      <label for="opt-name1">Name Spieler 1</label>
-      <input type="text" id="opt-name1" value="Spieler 1">
-    </div>
-
-    <div class="opt-field">
-      <label for="opt-name2">Name Spieler 2</label>
-      <input type="text" id="opt-name2" value="Spieler 2">
     </div>
 
     <p class="opt-error" id="opt-error" hidden></p>

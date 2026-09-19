@@ -133,6 +133,44 @@ body {
   transform: translateY(-2px);
 }
 
+/* Issue #6: Anzeigennamen als ersten Schritt des Start-Overlays. */
+.start-names {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 22rem;
+}
+
+.start-names[hidden] {
+  display: none;
+}
+
+.start-name-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f3f6b;
+  text-align: left;
+}
+
+.start-name-field input {
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.45rem 0.7rem;
+  border: 2px solid #b9d4f2;
+  border-radius: 10px;
+  background: #fff;
+  color: #17263f;
+}
+
+.start-name-field input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 /* ============ Spieler-Gesichter (Charaktere) ============ */
 .stage {
   display: flex;

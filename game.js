@@ -327,8 +327,11 @@ window.Game = window.Game || {};
   /**
    * Game.renderStartOverlay() → Issue #1: zeigt das Start-Panel am
    * Spielfeld („… beginnt!" + Los!-Button), solange s.awaitingStart.
-   * Kein Modal: die Haufen bleiben sichtbar, Optionen und „Neue Runde"
-   * funktionieren währenddessen weiter (AK5) — nur Züge sind blockiert.
+   * Issue #6: ist der erste Name noch Default, fragt das Panel kurz nach
+   * den Anzeigenamen (als ersten Schritt desselben Overlays — keine zwei
+   * rivalisierenden Modals). KI-Gegner: der Name ist vorbereitet und zählt
+   * als gesetzt. Kein Modal: Haufen bleiben sichtbar, Optionen + „Neue
+   * Runde" funktionieren währenddessen weiter (AK5).
    */
   Game.renderStartOverlay = function () {
     const el = document.querySelector("#start-overlay");
@@ -336,12 +339,40 @@ window.Game = window.Game || {};
       return;
     }
     const s = Game.state;
+    const q = (function (name) {
+      return (el.querySelector && typeof el.querySelector === "function")
+        ? el.querySelector(name) : null;
+    });
     if (!s.awaitingStart) {
       el.hidden = true;
       return;
     }
     el.hidden = false;
-    const whoEl = (el.querySelector) ? el.querySelector("#start-who") : null;
+
+    // --- Issue #6: Namensfrage, solange echte Namen noch fehlen -----------
+    // Nur fragen, wenn ein Name noch der Standard-Platzhalter ist; ist
+    // beides gesetzt, bleibt das Panel auf dem „Los!"-Schritt (AK6, kein
+    // nerviges Nachfragen nach jeder „Noch mal!").
+    const namesWrap = q("#start-names");
+    const name1 = q("#start-name1");
+    const name2 = q("#start-name2");
+    const askNames =
+      (s.name1 || "") === "Spieler 1" || (s.name2 || "") === "Spieler 2";
+    if (namesWrap) {
+      namesWrap.hidden = !askNames;
+    }
+    if (askNames) {
+      // KI-Gegner: Name ist der Charakternamen (Baxi/Ducola/Muisa) und zählt
+      // als gesetzt (Issue #6, AK3) — wird vorbereitet, nicht überschrieben.
+      if (name2) {
+        name2.value = Game.isAI(s.opponent) ? s.opponent : (s.name2 || "");
+      }
+      if (name1) {
+        name1.value = s.name1 || "";
+      }
+    }
+
+    const whoEl = q("#start-who");
     if (whoEl) {
       const starter = (s.active === 1) ? s.name1 : s.name2;
       whoEl.textContent = starter + " beginnt!";
@@ -358,6 +389,7 @@ window.Game = window.Game || {};
 
   /**
    * Game.confirmStart() → Issue #1: „Los!" bestätigt den Rundenstart.
+   * Issue #6: überträgt die (ggf. neu genannten) Anzeigennamen.
    * Erst jetzt dürfen Züge laufen; beginnt die KI, denkt sie wie bisher
    * (600–900 ms) und zieht dann. Kein Countdown (Nicht-tun).
    */
@@ -366,8 +398,29 @@ window.Game = window.Game || {};
     if (!s.awaitingStart) {
       return;
     }
+    // Issue #6: Anzeigennamen bestätigen (leeres Feld = bisheriger Name bleibt).
+    // Nur relevant, solange noch ein Platzhalter-Name im Spiel steckt.
+    const el = document.querySelector("#start-overlay");
+    const q = (function (name) {
+      return (el && el.querySelector && typeof el.querySelector === "function")
+        ? el.querySelector(name) : null;
+    });
+    if ((s.name1 || "") === "Spieler 1" || (s.name2 || "") === "Spieler 2") {
+      const n1 = q("#start-name1");
+      const n2 = q("#start-name2");
+      if (n1 && n1.value && String(n1.value).trim()) {
+        s.name1 = String(n1.value).trim();
+      }
+      if (n2 && n2.value && String(n2.value).trim()) {
+        s.name2 = String(n2.value).trim();
+      } else if (n2 && Game.isAI(s.opponent)) {
+        // KI: Charakternamen zählt als gesetzt (auch bei leerem Feld).
+        s.name2 = s.opponent;
+      }
+    }
     s.awaitingStart = false;
     Game.renderStartOverlay();
+    Game.renderCharacters();
     Game.cancelAIMove();
     if (Game.isAIActive()) {
       // KI beginnt: bestehende Denkzeit + Zug, wie bisher.

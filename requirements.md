@@ -165,6 +165,16 @@ Heuristik zurück (bei Baxi: s. 4.2).
   - Eigene Liste: dieselben Zahlen der Liste (z. B. „Nimm 1, 3 oder 5 Rosinen …").
   - Gewinnregel bleibt sichtbar: „Wer die letzte nimmt, gewinnt."
   - Funktioniert ohne Start-Overlay; im Overlay ist sie zusätzlich erlaubt.
+- **Anzeigennamen vor der ersten Runde (Issue #6):** Die Options-Felder
+  „Dein Name" und „Name vom Gegner" stehen **vor** den übrigen Parametern
+  (Haufen/Regel). Kommt ein Name noch als Platzhalter („Spieler 1" bzw.
+  „Spieler 2") vor der ersten Runde ins Spiel, fragt das Start-Overlay
+  (s. Issue #1) kurz nach den Anzeigenamen — als ersten Schritt desselben
+  Panels, nicht als zweites Modal. „Los!" bestätigt die Namen und lässt
+  dann den ersten Zug zu. Bei Auswahl einer KI wird der Name von Spieler 2
+  mit dem Charakternamen (`Baxi`/`Ducola`/`Muisa`) vorbelegt und zählt als
+  gesetzt. **Keine Persistenz:** nach einem Neuladen kehren die Namen zu
+  den Defaults zurück (kein localStorage, keine Cookies).
 - **Zugauslösung am Haufen (Issue #3):** Ein **Tipp auf eine Rosine** oder
   **Ziehen-Loslassen** führt unmittelbar den Zug aus (Menge = die markierten
   Steine, gesnappt/geklemmt auf die erlaubte Menge). Es gibt **keine

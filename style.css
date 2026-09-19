@@ -71,6 +71,20 @@ body {
   margin: 0 auto;
 }
 
+/* Issue #2: die aktuelle Zugregel, dauerhaft gut lesbar auf dem Spielfeld. */
+.rule-hint {
+  margin: 0 1rem 1rem;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  font-weight: 600;
+  color: #2b3550;
+  background: #fffaf0;
+  border: 3px solid #e8dcc3;
+  border-radius: 12px;
+  padding: 0.55rem 0.9rem;
+  max-width: 60rem;
+}
+
 /* ============ Spieler-Gesichter (Charaktere) ============ */
 .stage {
   display: flex;

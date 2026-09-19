@@ -157,6 +157,14 @@ Heuristik zurück (bei Baxi: s. 4.2).
 - **Letzter Zug:** Anzeige, was der zuletzt ziehende Spieler genommen hat
   (Name, Haufen, Anzahl). Z. B. `Baxi hat 3 aus Haufen 2 genommen`.
   (Vor dem ersten Zug: kein Eintrag / „–".)
+- **Aktuelle Zugregel auf dem Spielfeld (Issue #2):** Eine dauerhafte, gut
+  lesbare Zeile zeigt die *aktuelle* Regel in Kindersprache und passt sich
+  automatisch an, wenn per Optionen eine andere Regel übernommen wird:
+  - Klassisch: „Nimm so viele Rosinen, wie du willst — aber nur aus *einem* Haufen."
+  - 4er-Nimm: „Nimm 1, 2, 3 oder 4 Rosinen — aber nur aus *einem* Haufen."
+  - Eigene Liste: dieselben Zahlen der Liste (z. B. „Nimm 1, 3 oder 5 Rosinen …").
+  - Gewinnregel bleibt sichtbar: „Wer die letzte nimmt, gewinnt."
+  - Funktioniert ohne Start-Overlay; im Overlay ist sie zusätzlich erlaubt.
 - **Zugauslösung am Haufen (Issue #3):** Ein **Tipp auf eine Rosine** oder
   **Ziehen-Loslassen** führt unmittelbar den Zug aus (Menge = die markierten
   Steine, gesnappt/geklemmt auf die erlaubte Menge). Es gibt **keine

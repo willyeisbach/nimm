@@ -193,6 +193,42 @@ window.Game = window.Game || {};
   };
 
   /**
+   * Game.renderRuleHint() → spiegelt die AKTUELLE Zugregel als
+   * kindgerechten Satz auf dem Spielfeld (Issue #2). Der Text folgt
+   * s.rule / s.allowed, damit er sich jederzeit der Regel anpasst —
+   * auch nach „Änderung übernehmen", ohne Options-Dialog.
+   */
+  Game.renderRuleHint = function () {
+    const el = document.querySelector("#rule-hint");
+    if (!el) {
+      return;
+    }
+    const s = Game.state;
+    let amountText;
+    const allowed = s.allowed;
+    if (allowed && allowed.length) {
+      // Listen-Modi (4er / eigene Liste): Zahlen der Liste nennen,
+      // kindgerecht mit "oder" vor der letzten (1, 2, 3 ODER 4).
+      const list = allowed.slice().sort(function (a, b) { return a - b; });
+      let joined;
+      if (list.length === 1) {
+        joined = String(list[0]);
+      } else if (list.length === 2) {
+        joined = list[0] + " oder " + list[1];
+      } else {
+        joined = list.slice(0, -1).join(", ") + " oder " + list[list.length - 1];
+      }
+      amountText = joined + " Rosinen";
+    } else {
+      // Klassisch: beliebig viele, aber aus nur einem Haufen.
+      amountText = "so viele Rosinen, wie du willst";
+    }
+    el.textContent =
+      "Regel: Nimm " + amountText + " — aber nur aus einem Haufen. " +
+      "Wer die letzte nimmt, gewinnt!";
+  };
+
+  /**
    * Game.renderCharacters() → spiegelt Name/Rolle/Gesicht/Sprechblase der
    * beiden Spieler-Cards im DOM (wenn vorhanden).
    */
@@ -276,6 +312,7 @@ window.Game = window.Game || {};
     }
 
     Game.render();
+    Game.renderRuleHint();
     Game.renderUndoButton();
     Game.maybeAIMove();
     return s;

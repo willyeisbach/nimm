@@ -207,9 +207,9 @@ window.Game = window.Game || {};
         continue;
       }
       const name = p === 1 ? s.name1 : s.name2;
-      const role = p === 1
-        ? "du"
-        : (s.opponent === "Mensch" ? "Spieler 2" : s.opponent + " (KI)");
+      // Spieler 2: keine „(KI)"-Markierung mehr; der Name (Charaktername
+      // bzw. menschlicher Name) genügt, dazu die kindliche Rolle „Mitspieler".
+      const role = (p === 1) ? "du" : "Mitspieler";
       card.className = "char-card" + (s.active === p ? " active" : "");
       const faceEl = card.querySelector(".char-face");
       if (faceEl) {

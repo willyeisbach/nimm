@@ -381,112 +381,6 @@ body {
   cursor: not-allowed;
 }
 
-.move-input {
-  background: var(--card);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
-  padding: 0.8rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.pile-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.pile-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 2px solid #cfd8e6;
-  background: #fff;
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #33415e;
-  cursor: pointer;
-  line-height: 1;
-  font-family: inherit;
-  transition: background 0.12s ease, transform 0.1s ease;
-}
-
-.pile-btn:hover { background: #eef3fa; }
-.pile-btn:active { transform: scale(0.94); }
-
-.pile-actions {
-  flex: 1;
-  min-width: 160px;
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  flex-wrap: wrap;
-}
-
-.pile-label {
-  font-weight: 700;
-  color: #40506e;
-  font-size: 0.9rem;
-}
-
-#amount-input {
-  width: 3.2rem;
-  min-height: 44px;
-  font-size: 1.15rem;
-  font-weight: 800;
-  text-align: center;
-  border: 2px solid #cfd8e6;
-  border-radius: 10px;
-  font-family: inherit;
-  color: var(--ink);
-  background: #fff;
-}
-
-#amount-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.nimm-btn {
-  font-family: inherit;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #fff;
-  background: linear-gradient(180deg, #ff8f3c, #e85d04);
-  border: none;
-  border-radius: 999px;
-  padding: 0.65rem 1.9rem;
-  cursor: pointer;
-  min-height: 48px;
-  box-shadow: 0 3px 0 #a33d02, 0 5px 10px rgba(0, 0, 0, 0.18);
-  transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
-}
-
-.nimm-btn:hover:not(:disabled) {
-  filter: brightness(1.06);
-}
-
-.nimm-btn:active:not(:disabled) {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 #a33d02;
-}
-
-.nimm-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.input-error {
-  margin: 0.25rem 0 0;
-  font-size: 0.85rem;
-  color: var(--danger);
-  font-weight: 700;
-  width: 100%;
-}
-
 /* ============ Sieg-Overlay ============ */
 .win-overlay {
   position: fixed;
@@ -612,17 +506,10 @@ body {
   background: #eef3fa;
 }
 
-#draw-btn:focus-visible,
 #new-game-btn:focus-visible,
 .options-btn:focus-visible,
 .tool-btn:focus-visible,
-.pile-btn:focus-visible,
 .win-secondary:focus-visible {
-  outline: 3px solid #2f4f7d;
-  outline-offset: 2px;
-}
-
-#amount-input:focus-visible {
   outline: 3px solid #2f4f7d;
   outline-offset: 2px;
 }
@@ -824,24 +711,6 @@ body {
     flex: 1 1 100%;
     min-width: 0;
     padding: 0.85rem;
-  }
-
-  .move-input {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.8rem;
-  }
-
-  .pile-controls {
-    justify-content: center;
-  }
-
-  .pile-actions {
-    justify-content: space-between;
-  }
-
-  .nimm-btn {
-    width: 100%;
   }
 
   .win-face {

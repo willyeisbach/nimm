@@ -1,188 +1,257 @@
 "use strict";
 
+// Issue #3: Die Mengen-Leiste ist entfernt — Zugabgabe läuft nur noch am
+// Haufen (Tipp = Zug, Ziehen-Loslassen = Zug). Die alte Datei testete das
+// Reset-Verhalten von #amount-input/#input-error; jetzt deckt sie die neuen
+// Wege auf einem Production-nahen DOM (ohne diese Elemente):
+//   A) index.html enthält kein Leisten-Markup mehr
+//   B) Tipp auf die 3. Rosine (4er-Regel, Haufen ≥ 5) nimmt genau 3 ohne 2. Klick
+//   C) Eigene Liste {1,3,5}: Tipp 2 → Snap auf erlaubte 3
+//   D) Klassisch: Menge > Haufengröße → klemmt auf die Haufengröße
+//   E) Während Lock (Animation/KI) tut Tipp nichts
+//   F) selectHeap bleibt reine Auswahl (keine Menge, kein Zug)
 const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 
+// --- A) Leiste ist aus dem Markup weg --------------------------------------
+const indexHtml = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+["move-input", "amount-input", "draw-btn", "minus-btn", "plus-btn",
+ "amount-preview", "input-error", "nimm-btn"].forEach(function (id) {
+  assert.ok(indexHtml.indexOf(id) === -1,
+    "index.html must not contain the removed Leiste markup: " + id);
+});
+assert.ok(indexHtml.indexOf("Noch mal!") !== -1,
+  "the toolbar (Noch mal!) must stay");
+assert.ok(indexHtml.indexOf("undo-btn") !== -1,
+  "the toolbar (Rückgängig) must stay");
+
+// --- DOM-Mock (ohne #amount-input / #draw-btn / #input-error) --------------
 function makeClassList() {
   const classes = new Set();
   return {
     add(name) { classes.add(name); },
     remove(name) { classes.delete(name); },
     toggle(name, force) {
-      const enabled = force === undefined ? !classes.has(name) : force;
-      if (enabled) {
-        classes.add(name);
-      } else {
-        classes.delete(name);
-      }
-      return enabled;
+      const on = force === undefined ? !classes.has(name) : force;
+      if (on) { classes.add(name); } else { classes.delete(name); }
+      return on;
     },
     contains(name) { return classes.has(name); }
   };
 }
 
-function makeElement() {
+function element(extra) {
   const attributes = {};
   const listeners = {};
-  const element = {
+  const el = {
     disabled: false,
-    hidden: true,
+    hidden: false,
     textContent: "",
-    value: "1",
+    value: "",
     dataset: {},
+    tabIndex: 0,
+    style: {},
     classList: makeClassList(),
     setAttribute(name, value) { attributes[name] = String(value); },
-    getAttribute(name) {
-      return attributes[name] === undefined ? null : attributes[name];
-    },
+    getAttribute(name) { return attributes[name] === undefined ? null : attributes[name]; },
+    removeAttribute(name) { delete attributes[name]; },
     addEventListener(name, handler) { listeners[name] = handler; },
-    dispatch(name) {
-      if (listeners[name]) {
-        listeners[name]();
-      }
+    dispatch(name, event) { if (listeners[name]) { listeners[name](event || {}); } },
+    appendChild(child) { (el.children = el.children || []).push(child); },
+    querySelectorAll() { return el.children || []; },
+    closest(selector) {
+      if (selector === ".stone" && el.classList.contains("stone")) return el;
+      if (selector === ".heap" && el.classList.contains("heap")) return el;
+      return null;
     },
-    appendChild() {},
-    querySelectorAll() { return []; },
     remove() { this.removed = true; },
     focus() {}
   };
-  return element;
+  return Object.assign(el, extra || {});
 }
 
-const drawButton = makeElement();
-const input = makeElement();
-const error = makeElement();
-const activePlayer = makeElement();
-const lastMove = makeElement();
-const overlay = makeElement();
-const heapsContainer = makeElement();
-const heap = makeElement();
-heap.dataset.heapIndex = "0";
-const stones = [makeElement(), makeElement(), makeElement()];
-heap.querySelectorAll = function (selector) {
-  if (selector === ".stone") {
-    return stones;
+function makeStones(count) {
+  const stones = [];
+  for (let i = 0; i < count; i++) {
+    const s = element();
+    s.classList.add("stone");
+    stones.push(s);
   }
-  if (selector === ".stone.blinking") {
-    return stones.filter((stone) => stone.classList.contains("blinking"));
-  }
-  return [];
-};
+  return stones;
+}
 
-const timers = [];
-const document = {
-  readyState: "loading",
-  querySelector(selector) {
-    const elements = {
-      "#draw-btn": drawButton,
-      "#amount-input": input,
-      "#input-error": error,
-      "#active-player": activePlayer,
-      "#last-move": lastMove,
-      "#win-overlay": overlay,
-      "#heaps": heapsContainer,
-      '#heaps .heap[data-heap-index="0"]': heap
-    };
-    return elements[selector] || null;
-  },
-  querySelectorAll(selector) {
-    return selector === "#heaps .heap" ? [heap] : [];
-  },
-  createElement() { return makeElement(); },
-  addEventListener() {},
-  contains() { return true; }
-};
-const window = {
-  Game: {},
-  Nim: {
-    parseAllowed() { return null; },
-    legalAmount(rule, allowed, amount, heapSize) {
-      return amount >= 1 && amount <= heapSize;
+function buildDom() {
+  const stones = makeStones(5);
+  const heapEl = element({ children: stones });
+  heapEl.classList.add("heap");
+  heapEl.dataset.heapIndex = "0";
+  heapEl.querySelectorAll = function (selector) {
+    if (selector === ".stone") return stones.filter((st) => !st.removed);
+    if (selector === ".stone.blinking") {
+      return stones.filter((st) => !st.removed && st.classList.contains("blinking"));
     }
-  },
-  AI: {
-    chooseMove() { return { heapIdx: 0, amount: 1 }; }
+    return [];
+  };
+
+  function generic() {
+    return element();
   }
-};
-const context = {
-  window,
-  document,
-  console,
-  Math,
-  Number,
-  Array,
-  Uint32Array,
-  parseInt,
-  setTimeout(fn) {
-    timers.push(fn);
-    return timers.length;
-  },
-  clearTimeout(id) {
-    if (id !== undefined) {
-      timers[id - 1] = null;
-    }
-  }
-};
 
-vm.runInNewContext(
-  fs.readFileSync(path.join(__dirname, "..", "game.js"), "utf8"),
-  context,
-  { filename: "game.js" }
-);
+  const document = {
+    readyState: "loading",
+    querySelector(selector) {
+      if (selector === "#heaps") {
+        return element({ querySelectorAll: function (sel) {
+          if (sel === ".stone") return stones;
+          if (sel === "#heaps .heap") return [heapEl];
+          return [];
+        } });
+      }
+      if (selector === '#heaps .heap[data-heap-index="0"]') return heapEl;
+      if (selector === "#undo-btn") return generic();
+      if (selector === "#new-round-btn") return generic();
+      // Der Status-Block (aria-live) gehört weiterhin zum Spielfeld.
+      if (selector === "#active-player") return generic();
+      if (selector === "#last-move") return generic();
+      if (selector === "#characters") return generic();
+      // Bewusst null: die Leiste ist in production entfernt.
+      return null; // #amount-input / #draw-btn / #input-error
+    },
+    querySelectorAll(selector) {
+      return selector === "#heaps .heap" ? [heapEl] : [];
+    },
+    createElement() { return generic(); },
+    addEventListener() {},
+    contains() { return true; }
+  };
+  return { document, stones, heapEl };
+}
 
-const Game = window.Game;
-Game.checkWin = function () {};
-Game.state.heaps = [3];
-Game.state.selectedHeap = 0;
-Game.state.active = 1;
-Game.state.opponent = "Mensch";
-Game.state.lock = false;
-input.value = "1";
+function run(NimImpl) {
+  const dom = buildDom();
+  const window = {
+    Game: {},
+    Nim: NimImpl,
+    AI: { chooseMove() { return { heapIdx: 0, amount: 1 }; } }
+  };
+  const context = {
+    window,
+    document: dom.document,
+    console,
+    Math,
+    Number,
+    Array,
+    Uint32Array,
+    parseInt,
+    setTimeout(fn) { return {}; },
+    clearTimeout() {}
+  };
+  vm.runInNewContext(
+    fs.readFileSync(path.join(__dirname, "..", "game.js"), "utf8"),
+    context,
+    { filename: "game.js" }
+  );
+  const Game = window.Game;
+  // Die Tap-/Drag-Tests prüfen Commit-Semantik, nicht das Rendering.
+  // Ein echtes render() im Mock-DOM würde zu viele Unbekannte mitziehen.
+  Game.render = function () {};
+  // Animation sofort erledigen (Kein echtes Timing in der Unit-Test-Welt).
+  Game.animateAndRemove = function (heapIdx, amount, cb) {
+    Game.state.heaps[heapIdx] -= amount;
+    Game.state.lock = false;
+    cb();
+  };
+  return { Game, stones: dom.stones, nim: NimImpl };
+}
 
-// Real executeMove/animateAndRemove path: the post-move input must be empty.
-Game.executeMove();
-assert.strictEqual(Game.isLocked(), true, "the move must lock while animating");
-stones[2].dispatch("animationend");
-assert.strictEqual(input.value, "", "a completed move must clear the input");
-assert.strictEqual(error.hidden, true, "an empty reset must not show an input error after render");
-assert.strictEqual(Game.readAmount(), null, "an empty reset must remain invalid until new input");
-Game.updateButtonState();
-assert.strictEqual(drawButton.disabled, true, "an empty reset must keep the draw button disabled");
-input.value = "1";
-assert.strictEqual(Game.validateInput(), true, "a newly entered legal amount must validate");
-assert.strictEqual(Game.state.selectedHeap, 0, "a single heap remains selected automatically");
-assert.strictEqual(Game.state.active, 2, "the turn must pass to the other player");
-
-// newGame must use the same reset semantics without changing configuration.
-input.value = "4";
-overlay.hidden = false;
-let startCalls = 0;
-const originalStart = Game.start;
-Game.start = function () { startCalls += 1; };
-Game.newGame();
-assert.strictEqual(input.value, "", "newGame must clear the input");
-assert.strictEqual(overlay.hidden, true, "newGame must hide the win overlay");
-assert.strictEqual(startCalls, 1, "newGame must restart the game");
-Game.start = originalStart;
-
-// The AI callback is another completed-move path and must stay consistent.
-Game.animateAndRemove = function (heapIdx, amount, cb) {
-  Game.state.heaps[heapIdx] -= amount;
+function reset(Game, heaps, nim) {
+  Game.state.heaps = heaps.slice();
+  Game.state.selectedHeap = 0;
+  Game.state.active = 1;
+  Game.state.opponent = "Mensch";
   Game.state.lock = false;
-  input.disabled = false;
-  cb();
-};
-Game.state.heaps = [2];
-Game.state.selectedHeap = 0;
-Game.state.active = 2;
-Game.state.opponent = "Baxi";
-Game.state.lock = false;
-input.value = "1";
-Game.maybeAIMove();
-const aiTimer = timers[timers.length - 1];
-aiTimer();
-assert.strictEqual(input.value, "", "an AI move must also clear the input");
+  Game.state.pendingAmount = null;
+  Game.state.undoStack = [];
+  Game.state.lastMove = null;
+  Game.state.allowed = nim.parseAllowed();
+  Game.state.rule = nim.rule || "4er";
+  Game.checkWin = function () {};
+  Game.maybeAIMove = function () {};
+}
 
-console.log("Bug 03 regression test passed");
+const ruleFour = {
+  rule: "4er",
+  parseAllowed() { return [1, 2, 3, 4]; },
+  legalAmount(rule, allowed, amount, heapSize) {
+    return allowed.indexOf(amount) !== -1 && amount <= heapSize;
+  }
+};
+const ruleOwn = {
+  rule: "own",
+  parseAllowed() { return [1, 3, 5]; },
+  legalAmount(rule, allowed, amount, heapSize) {
+    return allowed.indexOf(amount) !== -1 && amount <= heapSize;
+  }
+};
+const ruleClassic = {
+  rule: "classic",
+  parseAllowed() { return null; },
+  legalAmount(rule, allowed, amount, heapSize) {
+    return amount >= 1 && amount <= heapSize;
+  }
+};
+
+// --- B) 4er-Regel: Tipp 3 nimmt exakt 3 ------------------------------------
+(function caseB() {
+  const { Game, nim } = run(ruleFour);
+  reset(Game, [5], nim);
+  Game.commitTap(0, 3);
+  assert.deepStrictEqual(Game.state.heaps, [2], "tap 3 must remove exactly 3 (4er rule)");
+  assert.strictEqual(Game.state.lastMove.amount, 3, "lastMove must record the tapped amount");
+  assert.strictEqual(Game.state.active, 2, "turn must pass to the other player");
+  assert.strictEqual(Game.state.pendingAmount, null, "the pending amount must be consumed");
+})();
+
+// --- C) Eigene Liste {1,3,5}: Tipp 4 snappt/klemmt auf erlaubte 3 ---------
+(function caseC() {
+  const { Game, nim } = run(ruleOwn);
+  reset(Game, [6], nim);
+  Game.commitTap(0, 4);
+  assert.deepStrictEqual(Game.state.heaps, [3], "illegal amount must clamp to the nearest lower legal one (3)");
+  assert.strictEqual(Game.state.lastMove.amount, 3, "the clamped amount must be committed");
+})();
+
+// --- D) Klassisch: Menge > Haufen klemmt auf die Haufengröße ---------------
+(function caseD() {
+  const { Game, nim } = run(ruleClassic);
+  reset(Game, [3], nim);
+  Game.commitTap(0, 9);
+  assert.deepStrictEqual(Game.state.heaps, [0], "tap beyond heap size must clamp to the heap size");
+  assert.strictEqual(Game.state.lastMove.amount, 3, "the clamped amount must be committed");
+})();
+
+// --- E) Lock: Tipp tut nichts ----------------------------------------------
+(function caseE() {
+  const { Game, nim } = run(ruleFour);
+  reset(Game, [5], nim);
+  Game.state.lock = true;
+  Game.commitTap(0, 3);
+  assert.deepStrictEqual(Game.state.heaps, [5], "a tap while locked must not move stones");
+  assert.strictEqual(Game.state.pendingAmount, null, "a locked tap must not leave a pending amount");
+  Game.state.lock = false;
+})();
+
+// --- F) selectHeap bleibt reine Auswahl ------------------------------------
+(function caseF() {
+  const { Game, nim } = run(ruleFour);
+  reset(Game, [5], nim);
+  Game.selectHeap(0);
+  assert.strictEqual(Game.state.selectedHeap, 0, "selectHeap must select the heap");
+  assert.strictEqual(Game.state.pendingAmount, null, "selectHeap must not set a move amount");
+  assert.deepStrictEqual(Game.state.heaps, [5], "selectHeap must not remove stones");
+  assert.strictEqual(Game.state.active, 1, "selectHeap must not switch players");
+})();
+
+console.log("Bug 03 regression test passed (tap/drag am Haufen statt Leiste)");

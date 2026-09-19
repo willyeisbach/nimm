@@ -157,11 +157,11 @@ Heuristik zurück (bei Baxi: s. 4.2).
 - **Letzter Zug:** Anzeige, was der zuletzt ziehende Spieler genommen hat
   (Name, Haufen, Anzahl). Z. B. `Baxi hat 3 aus Haufen 2 genommen`.
   (Vor dem ersten Zug: kein Eintrag / „–".)
-- **Eingabe für den Zug:**
-  - Auswahl des **Ziel-Haufens** (per Klick auf den Haufen; markiert/highlighted).
-    → Bei nur einem Haufen ist dieser automatisch Ziel.
-  - **Eingabefeld „Steine zu nehmen"** (Zahl).
-  - **Button „Ziehen" / „Zug ausführen"**.
+- **Zugauslösung am Haufen (Issue #3):** Ein **Tipp auf eine Rosine** oder
+  **Ziehen-Loslassen** führt unmittelbar den Zug aus (Menge = die markierten
+  Steine, gesnappt/geklemmt auf die erlaubte Menge). Es gibt **keine
+  Mengen-Leiste** (kein Ziffernfeld, +/– oder „Nimm!"-Button) mehr; Auswahl
+  bleibt per Klick/Tastatur möglich.
 - **Options-Zahnrad** in der **oberen rechten Ecke** öffnet/schließt den
   Options-Dialog (s. 5.2).
 
@@ -173,19 +173,19 @@ Heuristik zurück (bei Baxi: s. 4.2).
   Spiel**.
 - Button **„Abbrechen"/Schließen** → Dialog schließt, Spiel läuft unverändert weiter.
 
-### 5.3 Zugabgabe & Validierung des Eingabefelds
+### 5.3 Zugauslösung und Regelprüfung (Issue #3)
 
-Der eingegebene Wert ist **gültig**, wenn **alle** Bedingungen gelten:
-- Zahl ist eine **positive Ganzzahl** (`≥ 1`).
+Ein Tipp oder Ziehen-Loslassen setzt `pendingAmount` (die vom Tipppunkt
+abgeleitete, gesnappte Menge) und rührt `executeMove` aus.
+Die Menge ist **gültig** (Zug läuft), wenn **alle** Bedingungen gelten:
+- Menge ist eine **positive Ganzzahl** (`≥ 1`).
 - Menge ist in der **erlaubten Menge** der aktuellen Zugregel enthalten
   (Klassisch: `≤ Haufengröße`; 4er-Nimm/Eigene Liste: Wert ∈ `A`).
-- Menge `≤` der Größe des **ausgewählten Ziel-Haufens**.
+- Menge `≤` der Größe des **treffenden Ziel-Haufens**.
 
-- **Button „Ziehen" ist nur bei gültiger Eingabe freigeschaltet** (sonst
-  disabled/grau).
-- Ungültige Eingaben zeigen eine (kleine) Fehler-/Hinweismeldung.
-- Nach Ausführung wird das Eingabefeld geleert, der ausgewählte Haufen zurückgesetzt
-  und die Zugübergabe an den nächsten Spieler erfolgt.
+Gesnappte/geklemmte Werte sind legal und führen den Zug aus
+(z. B. „Eigene Liste {1,3,5}“: Tipp 4 → snappt auf 3 → 3 Steine weg).
+Ungültige oder gesperrte Werte führen **keinen** Zug aus.
 
 ### 5.4 Anzeige letzter Zug
 - Siehe 5.1 (Nachvollziehbarkeit, wer was wann genommen hat).
@@ -218,8 +218,8 @@ Der eingegebene Wert ist **gültig**, wenn **alle** Bedingungen gelten:
 | ----------------- | -------------------------------------------------------------------------- |
 | Options-Parameter | `min ≤ max`, `maxHaufen ≥ 1`, Zugregel-Liste gültig, `1` in Liste          |
 | Zugregel-Liste    | positive Ganzzahlen, `1` enthalten, Duplikate raus, sortiert               |
-| Zug (Eingabe)     | `≥ 1`, in erlaubter Menge, `≤` Ziel-Haufen-Größe                          |
-| Button „Ziehen"   | nur bei gültiger Eingabe aktiv                                             |
+| Zug (am Haufen) | `≥ 1`, in erlaubter Menge, `≤` Ziel-Haufen-Größe                        |
+| Tipp/Drag       | legal ⇒ Zug; sonst kein Zug (Snap/Klemmen)                                |
 
 ---
 
@@ -256,8 +256,8 @@ Technologie-Spektrum, Datei-Organisation, Kompatibilitätsregeln) ist in
       Spiel** mit den neuen Werten; „Abbrechen" ändert nichts.
 - [ ] Alle drei Zugregeln funktionieren; ungültige „Eigene Liste" (ohne `1` /
       nicht numerisch) wird abgelehnt.
-- [ ] Nur Steine **aus einem Haufen** pro Zug; Button „Ziehen" ist exakt dann aktiv,
-      wenn die Eingabe für den gewählten Haufen legal ist.
+- [ ] Nur Steine **aus einem Haufen** pro Zug; ein Tipp/Ziehen führt den Zug
+      genau dann aus, wenn die abgeleitete Menge für den betroffenen Haufen legal ist.
 - [ ] Aktiver Spieler und letzter Zug werden angezeigt.
 - [ ] Zu entfernende Steine **blinken**, dann verschwinden sie.
 - [ ] **Letzter Stein** → Gratulation + „Noch mal!"-Button (neue Runde,
@@ -292,10 +292,12 @@ Technologie-Spektrum, Datei-Organisation, Kompatibilitätsregeln) ist in
 weder Mod-4-Invarianz, Grundy-Werte noch Bitparität kennen. Alles muss sich
 wie ein Spiel anfühlen, nicht wie ein Formular.
 
-- **Zugabgabe direkt am Haufen:** Steine per Finger/Zeiger „wegziehen"
-  (ziehen = Auswahl, loslassen = Zug). Ein Tipp auf einen Stein markiert die
-  Menge (oberste N Steine mit Häkchen). Als Tastatur-/Formular-Fallback
-  bleiben Ziffernfeld, +/– und „Nimm!"-Button.
+- **Zugabgabe direkt am Haufen (Issue #3):** Züge laufen ausschließlich am
+  Haufen — ein **Tipp auf die n-te Rosine von oben = ein Zug mit n
+  Rosinen** (gesnappt/geklemmt auf die erlaubte Menge der aktuellen
+  Regel), und **Ziehen-Loslassen** führt denselben Zug aus. Die frühere
+  Mengen-Leiste (Ziffernfeld, +/–, „Nimm!"-Button) ist als Formular-Fallback
+  entfernt.
 - **Charaktere mit Gesichtern & Sprechblasen:** Beide Spieler erscheinen als
   Karten mit Emoji-Gesicht, Name, Rolle und Sprechblase. Die KI reagiert:
   - „denkt…" (geduldig, ~0,6–0,9 s),

@@ -101,6 +101,7 @@ window.Game = window.Game || {};
     lastMove: null,    // null oder { player, heapIdx, amount }
     selectedHeap: 0,   // 0-basiert: ausgewählter Ziel-Haufen
     allowed: null,     // erlaubte Mengen A (null = klassisch)
+    pendingAmount: null, // Issue #3: vom Haufen zugewiesene Menge, bis executeMove
     lock: false,       // true während Animation/KI-Zug
     faces: null,       // {1:"🙂",2:"😼"} – aktuelle Gesichter (null = idle)
     bubble: {},        // {1/2: Sprechblasen-Text}
@@ -260,6 +261,7 @@ window.Game = window.Game || {};
     s.lock = false;
     s.allowed = window.Nim.parseAllowed(s.rule, s.ownList);
     s.selectedHeap = firstNonEmptyHeap(s.heaps);
+    s.pendingAmount = null;
     s.undoStack = [];
     s.faces = Game.idleFaces();
     s.bubble = {};
@@ -323,6 +325,10 @@ window.Game = window.Game || {};
       return;
     }
     s.selectedHeap = idx;
+    // Issue #3: reine Auswahl ohne Menge — die Menge kommt nur über commitTap
+    // (Tipp/Zug). Sonst würde eine Menge eines früheren Zugs durch einen
+    // Folge-Zug „mitgezogen".
+    s.pendingAmount = null;
     Game.renderSelection();
     Game.updateButtonState();
   };
@@ -352,15 +358,18 @@ window.Game = window.Game || {};
    */
   Game.readAmount = function () {
     const el = document.querySelector("#amount-input");
-    if (!el) {
-      return null;
+    if (el) {
+      const raw = el.value.trim();
+      if (/^\d+$/.test(raw)) {
+        const n = parseInt(raw, 10);
+        if (n >= 1) {
+          return n;
+        }
+      }
     }
-    const raw = el.value.trim();
-    if (raw === "" || !/^\d+$/.test(raw)) {
-      return null;
-    }
-    const n = parseInt(raw, 10);
-    return n >= 1 ? n : null;
+    // Issue #3: Leiste ist entfernt — Menge kommt vom Haufen-Tipp/Zug.
+    const p = Game.state.pendingAmount;
+    return (typeof p === "number" && p >= 1) ? p : null;
   };
 
   /**
@@ -690,7 +699,8 @@ window.Game = window.Game || {};
 
   /**
    * Game.executeMove() → void
-   * Handler des Buttons „Nimm!" (und des Drag-Commits).
+   * Issue #3: Zug per Tipp/Ziehen am Haufen (commitTap) — die Menge kommt
+   * aus s.pendingAmount (via readAmount), nicht mehr aus einem Formular.
    */
   Game.executeMove = function () {
     if (Game.isLocked()) {
@@ -703,6 +713,7 @@ window.Game = window.Game || {};
     const s = Game.state;
     const heapIdx = s.selectedHeap;
     const amount = Game.readAmount();
+    s.pendingAmount = null;
 
     Game.pushHistory();
     Game.animateAndRemove(heapIdx, amount, function () {
@@ -710,6 +721,7 @@ window.Game = window.Game || {};
       s.active = (s.active === 1) ? 2 : 1;
 
       s.selectedHeap = -1;
+      s.pendingAmount = null;
       const input = document.querySelector("#amount-input");
       if (input) { input.value = ""; }
       const err = document.querySelector("#input-error");
@@ -725,6 +737,51 @@ window.Game = window.Game || {};
       Game.checkWin();
       Game.maybeAIMove();
     });
+  };
+
+  /**
+   * Game.commitTap(heapIdx, n) → void
+   * Issue #3: ein Tipp auf die n-te Rosine (bzw. ein Ziehen-Loslassen mit
+   * n) = sofortiger Zug. Menge = n, gesnappt/geklemmt auf die erlaubte
+   * Menge der aktuellen Regel. Kein zweiter Bestätigungsschritt.
+   */
+  Game.commitTap = function (heapIdx, n) {
+    if (Game.isLocked()) {
+      return;
+    }
+    const s = Game.state;
+    if (typeof heapIdx !== "number" || heapIdx < 0 || heapIdx >= s.heaps.length) {
+      return;
+    }
+    if (s.heaps[heapIdx] < 1) {
+      return;
+    }
+    if (!Number.isFinite(n) || n < 1) {
+      n = 1;
+    }
+    s.selectedHeap = heapIdx;
+    const maxTake = Game.maxAllowable(heapIdx);
+    if (maxTake < 1) {
+      Game.renderSelection();
+      return;
+    }
+    let amount = Math.min(n, maxTake);
+    // snapAmount liest s.selectedHeap → vorher gesetzt (s. o.).
+    amount = (amount >= 1) ? Game.snapAmount(amount) : null;
+    if (amount === null || amount < 1) {
+      Game.renderSelection();
+      return;
+    }
+    // Menge transportieren: production-DOM hat kein #amount-input mehr,
+    // readAmount() fällt daher auf state.pendingAmount zurück. Beides setzen
+    // (input für Test-Mocks mit Leisten-Rest), pendingAmount ist entscheidend.
+    s.pendingAmount = amount;
+    const input = document.querySelector("#amount-input");
+    if (input) {
+      input.value = String(amount);
+    }
+    Game.renderSelection();
+    Game.executeMove();
   };
 
   /**
@@ -1304,7 +1361,9 @@ window.Game = window.Game || {};
 
     const heapsEl = document.querySelector("#heaps");
 
-    // Haufen: Auswahl per Klick (delegiert).
+    // Haufen: Auswahl per Klick/Tastatur (delegiert). Issue #3: Auswahl
+    // bleibt möglich; der ZUG läuft über den Pointer-Pfad (Tipp/Ziehen auf
+    // die Steine, s. Game.bindDrag → commitTap).
     if (heapsEl) {
       heapsEl.addEventListener("click", function (ev) {
         const heap = ev.target.closest(".heap");
@@ -1327,8 +1386,8 @@ window.Game = window.Game || {};
         Game.selectHeap(parseInt(heap.dataset.heapIndex, 10));
       });
 
-      // ===== Drag-Auswahl: Finger/Zeiger auf einen Stein legen, über mehrere
-      // Steine ziehen, loslassen = Zug. (Klick bleibt = Auswahl/Bestätigung.)
+      // ===== Tipp/Ziehen: Finger/Zeiger auf einen Stein, (optional) über
+      // mehrere ziehe, loslassen = Zug. (Issue #3: Tipp = sofortiger Zug.)
       if (typeof window.PointerEvent !== "undefined") {
         Game.bindDrag(heapsEl, "pointerdown", "pointermove", "pointerup", "pointercancel");
       } else if (typeof window.MouseEvent !== "undefined") {
@@ -1336,39 +1395,8 @@ window.Game = window.Game || {};
       }
     }
 
-    // Input: reaktive Validierung bei jeder Änderung.
-    const input = document.querySelector("#amount-input");
-    if (input) {
-      input.disabled = false;
-      input.addEventListener("input", function () {
-        if (Game.isLocked()) { return; }
-        Game.updateButtonState();
-        Game.previewAmount(Game.state.selectedHeap, Game.readAmount() || 0);
-      });
-      input.addEventListener("change", function () {
-        if (Game.isLocked()) { return; }
-        Game.updateButtonState();
-      });
-    }
-
-    // Button „Nimm!" (Task 12): executeMove mit Lock-Guard.
-    const drawBtn = document.querySelector("#draw-btn");
-    if (drawBtn) {
-      drawBtn.addEventListener("click", function () {
-        if (Game.isLocked()) { return; }
-        Game.executeMove();
-      });
-    }
-
-    // +/- Knöpfe.
-    const minusBtn = document.querySelector("#minus-btn");
-    if (minusBtn) {
-      minusBtn.addEventListener("click", function () { Game.bumpAmount(-1); });
-    }
-    const plusBtn = document.querySelector("#plus-btn");
-    if (plusBtn) {
-      plusBtn.addEventListener("click", function () { Game.bumpAmount(1); });
-    }
+    // Issue #3: Mengen-Leiste (+/–, Nimm!, Ziffernfeld) ist entfernt —
+    // Züge laufen am Haufen (commitTap), Auswahl per Klick/Tastatur.
 
     // Rückgängig-Button.
     const undoBtn = document.querySelector("#undo-btn");
@@ -1500,9 +1528,11 @@ window.Game = window.Game || {};
       }
       Game.selectHeap(idx);
 
+      // Issue #3: Menge = Position des Steins von oben (1-basiert) →
+      // „Tippe auf die n-te Rosine = n nehmen". (Konsistent für Tipp und
+      // Ziehen; Vorschau/Entfernung greifen auf dieselbe Menge zu.)
       const pos = stoneIndexIn(heap, stone);
-      const list = heap.querySelectorAll(".stone");
-      const n = Math.max(1, list.length - pos);
+      const n = Math.max(1, pos + 1);
       const p0 = pointOf(ev);
       // Der Haufen, auf dem der Zug begonnen wurde, bleibt fest. Ein
       // versehentliches Überqueren eines anderen Haufens darf niemals den
@@ -1535,7 +1565,7 @@ window.Game = window.Game || {};
         const list = heap.querySelectorAll(".stone");
         const pos = Array.prototype.indexOf.call(list, stone);
         if (pos !== -1) {
-          drag.n = Math.max(1, list.length - pos);
+          drag.n = Math.max(1, pos + 1);
         }
       }
       Game.previewAmount(drag.originIdx, drag.n);
@@ -1549,33 +1579,16 @@ window.Game = window.Game || {};
       const travel = Math.abs(p1.x - drag.p0.x) + Math.abs(p1.y - drag.p0.y);
       const current = drag;
       drag = null;
-      if (travel < 12) {
-        // Nur Auswahl – kein Zug, Kind kann Nimm/+/- oder weiterziehen.
-        return;
-      }
       const idx = current.originIdx;
       const stillOk = idx >= 0 && idx < Game.state.heaps.length &&
         Game.state.heaps[idx] >= 1;
       if (!stillOk) {
         return;
       }
-      // Der Zug wird auf dem Ursprungshaufen abgeschlossen, egal, wo der
-      // Zeiger losgelassen wurde (auch außerhalb der Haufen).
-      // Auf erlaubte Mengen klemmen (Listen-Modus), damit auch Drag-Züge
-      // mit z. B. 2 Steinchen bei [1,3,5] legal bleiben (→ 3).
-      let amount = Math.min(current.n, Game.maxAllowable(idx));
-      amount = (amount >= 1) ? Game.snapAmount(amount) : null;
-      if (amount === null || amount < 1) {
-        return;
-      }
-      const input = document.querySelector("#amount-input");
-      if (input) {
-        input.value = String(amount);
-      }
-      Game.selectHeap(idx);
-      if (amount >= 1) {
-        Game.executeMove();
-      }
+      // Issue #3: sowohl kurzer Tipp als auch Ziehen-Loslassen = Zug auf dem
+      // Ursprungshaufen. Menge = gezogene Anzahl, gesnappt/geklemmt auf die
+      // erlaubte Menge; kein zweiter Bestätigungsschritt (Leiste ist weg).
+      Game.commitTap(idx, current.n);
     };
 
     const onCancel = function () {

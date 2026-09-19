@@ -219,6 +219,11 @@ body {
   border-color: #d8b96a;
 }
 
+/* Leere Haufen sind eindeutig tot: kein Hover-Indikator mehr. */
+.heap--empty:hover {
+  border-color: #e8dcc3;
+}
+
 .heap:focus {
   outline: none;
 }
@@ -244,6 +249,14 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 2.5rem;
+}
+
+/* "leer"-Beschriftung: ruhig, ausgegraut, keine Stein-Optik. */
+.empty-note {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: #9a8c72;
+  letter-spacing: 0.02em;
 }
 
 .heap-head {

@@ -1784,6 +1784,9 @@ window.Game = window.Game || {};
       const empty = size < 1;
       heap.className = empty ? "heap heap--empty" : "heap";
       heap.dataset.heapIndex = String(i);
+      if (empty) {
+        heap.setAttribute("aria-label", "Haufen " + (i + 1) + ", leer");
+      }
       heap.tabIndex = empty ? -1 : 0;
       heap.setAttribute("role", empty ? "none" : "button");
       if (!empty) {

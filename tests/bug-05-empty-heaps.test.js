@@ -155,6 +155,46 @@ const renderedHeaps = heapsContainer.children;
 const emptyHeap = renderedHeaps[0];
 const legalHeap = renderedHeaps[1];
 const otherLegalHeap = renderedHeaps[2];
+
+// Issue #9: leere Haufen sind visuell eindeutig tote Flächen.
+assert.ok(
+  emptyHeap.classList.contains("heap--empty"),
+  "an empty heap must carry the heap--empty marker class"
+);
+assert.ok(
+  !emptyHeap.classList.contains("selected"),
+  "an empty heap must never be marked selected"
+);
+const stonesWrap = emptyHeap.children.filter(
+  (child) => child.classList.contains("heap-stones")
+);
+assert.strictEqual(stonesWrap.length, 1, "an empty heap must keep its .heap-stones area");
+const emptyNote = stonesWrap[0].children.filter(
+  (child) => child.classList.contains("empty-note")
+);
+assert.strictEqual(emptyNote.length, 1, "an empty heap must show exactly one 'leer'-Notiz");
+assert.ok(
+  /leer/.test(emptyNote[0].textContent),
+  "the empty-note must contain the word 'leer'"
+);
+assert.strictEqual(
+  stonesWrap[0].children.filter((child) => child.classList.contains("stone")).length,
+  0,
+  "an empty heap must contain no stone elements"
+);
+assert.ok(
+  !legalHeap.classList.contains("heap--empty"),
+  "a non-empty heap must not be marked empty"
+);
+const legalStonesWrap = legalHeap.children.filter(
+  (child) => child.classList.contains("heap-stones")
+);
+assert.strictEqual(
+  legalStonesWrap[0].children.filter((child) => child.classList.contains("stone")).length,
+  3,
+  "a non-empty heap must keep its stone elements"
+);
+
 assert.strictEqual(Game.state.selectedHeap, 1, "render must not leave an empty heap selected");
 assert.strictEqual(emptyHeap.tabIndex, -1, "an empty heap must not be focusable");
 assert.strictEqual(emptyHeap.getAttribute("role"), "none", "an empty heap must not expose an interactive role");

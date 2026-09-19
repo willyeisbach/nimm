@@ -784,6 +784,10 @@ window.Game = window.Game || {};
     if (!overlay) {
       return;
     }
+    Game._winLastFocused = document.activeElement;
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-labelledby", "win-title");
     overlay.innerHTML = "";
 
     const face = document.createElement("div");
@@ -792,6 +796,7 @@ window.Game = window.Game || {};
     overlay.appendChild(face);
 
     const msg = document.createElement("p");
+    msg.id = "win-title";
     msg.className = "win-message";
     msg.textContent = winnerName + " hat gewonnen!";
     overlay.appendChild(msg);
@@ -819,6 +824,11 @@ window.Game = window.Game || {};
     closeBtn.textContent = "Zurück zum Spiel";
     closeBtn.addEventListener("click", function () {
       overlay.hidden = true;
+      const target = Game._winLastFocused;
+      if (target && typeof target.focus === "function") {
+        target.focus();
+      }
+      Game._winLastFocused = null;
     });
     actions.appendChild(closeBtn);
 
@@ -834,6 +844,9 @@ window.Game = window.Game || {};
 
     overlay.appendChild(actions);
     overlay.hidden = false;
+    if (typeof btn.focus === "function") {
+      btn.focus();
+    }
     Game.confetti();
   };
 
@@ -1501,7 +1514,11 @@ window.Game = window.Game || {};
       const list = heap.querySelectorAll(".stone");
       const n = Math.max(1, list.length - pos);
       const p0 = pointOf(ev);
-      drag = { idx: idx, n: n, p0: p0, committed: false };
+      // Der Haufen, auf dem der Zug begonnen wurde, bleibt fest. Ein
+      // versehentliches Überqueren eines anderen Haufens darf niemals den
+      // Zielhaufen wechseln; Loslassen außerhalb des Haufens soll trotzdem
+      // den begonnenen Zug abschließen.
+      drag = { originIdx: idx, n: n, p0: p0, committed: false };
       Game.previewAmount(idx, n);
     };
 
@@ -1512,15 +1529,14 @@ window.Game = window.Game || {};
       if (ev.preventDefault) {
         ev.preventDefault();
       }
-      let heap = heapFrom(ev);
-      if (!heap) {
-        return;
-      }
-      const idx = parseInt(heap.dataset.heapIndex, 10);
-      if (typeof idx !== "number" || idx < 0 || idx >= Game.state.heaps.length) {
-        return;
-      }
-      if (Game.state.heaps[idx] < 1) {
+      // Nur Steine des Ursprungshaufens verändern die Auswahl. Außerhalb
+      // eines Haufens oder über einem anderen Haufen bleibt der laufende Zug
+      // gültig und behält seine bisherige Menge.
+      const originHeap = document.querySelector(
+        '#heaps .heap[data-heap-index="' + drag.originIdx + '"]'
+      );
+      const heap = heapFrom(ev);
+      if (!heap || heap !== originHeap) {
         return;
       }
       const stone = (ev.target && typeof ev.target.closest === "function")
@@ -1532,11 +1548,7 @@ window.Game = window.Game || {};
           drag.n = Math.max(1, list.length - pos);
         }
       }
-      if (idx !== drag.idx) {
-        drag.idx = idx;
-        Game.selectHeap(idx);
-      }
-      Game.previewAmount(drag.idx, drag.n);
+      Game.previewAmount(drag.originIdx, drag.n);
     };
 
     const onUp = function (ev) {
@@ -1551,12 +1563,14 @@ window.Game = window.Game || {};
         // Nur Auswahl – kein Zug, Kind kann Nimm/+/- oder weiterziehen.
         return;
       }
-      const heap = heapFrom(ev);
-      const stillOk = heap && Game.state.heaps[parseInt(heap.dataset.heapIndex, 10)] >= 1;
+      const idx = current.originIdx;
+      const stillOk = idx >= 0 && idx < Game.state.heaps.length &&
+        Game.state.heaps[idx] >= 1;
       if (!stillOk) {
         return;
       }
-      const idx = parseInt(heap.dataset.heapIndex, 10);
+      // Der Zug wird auf dem Ursprungshaufen abgeschlossen, egal, wo der
+      // Zeiger losgelassen wurde (auch außerhalb der Haufen).
       // Auf erlaubte Mengen klemmen (Listen-Modus), damit auch Drag-Züge
       // mit z. B. 2 Steinchen bei [1,3,5] legal bleiben (→ 3).
       let amount = Math.min(current.n, Game.maxAllowable(idx));

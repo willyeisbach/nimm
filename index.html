@@ -61,7 +61,7 @@
     </section>
   </main>
 
-  <div class="options" id="options-dialog" hidden role="dialog" aria-labelledby="options-title">
+  <div class="options" id="options-dialog" hidden role="dialog" aria-modal="true" aria-labelledby="options-title">
     <h2 id="options-title">Optionen</h2>
 
     <div class="opt-field">
@@ -137,7 +137,7 @@
     </div>
   </div>
 
-  <div id="win-overlay" class="win-overlay" hidden>
+  <div id="win-overlay" class="win-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="win-title" tabindex="-1">
     <!-- Sieg-Anzeige wird von game.js gesetzt -->
   </div>
 

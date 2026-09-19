@@ -203,6 +203,10 @@ sofort möglich.
   3–4 Blips / ~600–800 ms, CSS-Klasse `blinking` mit Opacität/Visibilität).
 - Danach werden die Steine aus dem Haufen entfernt, die Anzeige aktualisiert sich.
 - Während der Animation sind Eingabe und Button **gesperrt** (kein Doppelzug).
+- **KI-UX (Issue #7):** Zieht die KI, zählt sie die genommenen Rosinen laut in
+  ihrer Sprechblase mit — schrittweise passend zur Menge (z. B. „Eins…" →
+  „Zwei…" → „Drei — Nimm!"), aufgeteilt über die Dauer der Blink-Animation.
+  Menschliche Züge brauchen kein Mitzählen.
 
 ### 5.6 Sieg & noch mal!
 

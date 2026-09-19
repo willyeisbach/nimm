@@ -604,6 +604,62 @@ window.Game = window.Game || {};
     Game.previewAmount(s.selectedHeap, next);
   };
 
+  // --- Issue #7: KI zählt die genommenen Rosinen laut in der Sprechblase mit ---
+  const COUNT_WORDS = ["Eins", "Zwei", "Drei", "Vier", "Fünf", "Sechs",
+    "Sieben", "Acht", "Neun", "Zehn"];
+  const BLINK_TOTAL = 1200; // 2 × 0,6 s (style.css: .stone.blinking) — Timing-Basis
+
+  /**
+   * Game.startAICounting(heapIdx, amount, player) → void
+   * Issue #7: während der Entfernen-Animation eines KI-Zugs zählt die KI
+   * die Steine nacheinander in ihrer Sprechblase mit („Eins…" → „Zwei…"
+   * → „Drei — Nimm!"), schrittweise passend zum Menge; letzter Schritt
+   * erscheint kurz, bevor die Steine verschwinden. Menschliche Züge
+   * springen über; bei prefers-reduced-motion zählt sie maximal einmal.
+   */
+  Game.startAICounting = function (heapIdx, amount) {
+    // Nur bei echten KI-Zügen: s.active ist während der Animation noch der
+    // ziehende Spieler (AI = 2), erst im Callback wird er gewechselt.
+    if (!Game.isAIActive()) {
+      return; // menschlicher Zug → kein Mitzählen (AK3)
+    }
+    const n = Math.max(1, Math.floor(amount) || 1);
+    const reducedMotion = typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) {
+      // Keine schrittweise Animation: einmal das korrekte Zählwort nennen.
+      const last = COUNT_WORDS[Math.min(n - 1, COUNT_WORDS.length - 1)];
+      Game.setBubble(2, last + " — Nimm!");
+      Game.renderCharacters();
+      return;
+    }
+    if (n === 1) {
+      Game.setBubble(2, COUNT_WORDS[0] + " — Nimm!");
+      Game.renderCharacters();
+      return;
+    }
+    // Alle n Schritte müssen innerhalb der Blink-Dauer (1200 ms) passen —
+    // kein künstlich langes Warten (Issue #7); das letzte Wort liegt
+    // kurz vor dem Stein-Verschwinden.
+    const stepMs = Math.max(60, Math.ceil((BLINK_TOTAL - 60) / n));
+    let step = 0;
+    let t = setTimeout(function tick() {
+      step += 1;
+      if (n - step === 0) {
+        const last = COUNT_WORDS[Math.min(n - 1, COUNT_WORDS.length - 1)];
+        Game.setBubble(2, last + " — Nimm!");
+        Game.renderCharacters();
+        return;
+      }
+      const word = COUNT_WORDS[Math.min(step - 1, COUNT_WORDS.length - 1)];
+      Game.setBubble(2, word + "…");
+      Game.renderCharacters();
+      t = setTimeout(tick, stepMs);
+    }, stepMs);
+    // Kein Leak: Timer nicht länger halten, als die Animation läuft.
+    setTimeout(function () { if (t) { clearTimeout(t); } }, BLINK_TOTAL + 200);
+  };
+
   /**
    * Game.animateAndRemove(heapIdx, amount, cb) (Task 11) – wie vor,
    * ohne Änderung der öffentlichen Semantik.
@@ -637,6 +693,10 @@ window.Game = window.Game || {};
       el.classList.add("blinking");
       el.classList.remove("marked");
     });
+
+    // Issue #7: KI zählt während der Animation in ihrer Sprechblase mit.
+    // (no-op bei menschlichen Zügen — AK3: kein erzwungenes Mitzählen)
+    Game.startAICounting(heapIdx, amount);
 
     let done = false;
     const seq = Game._moveSeq;

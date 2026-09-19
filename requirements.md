@@ -280,3 +280,42 @@ Technologie-Spektrum, Datei-Organisation, Kompatibilitätsregeln) ist in
 - **Beginn:** **zufälliger Spieler** (S1 oder S2) beginnt.
 - **Spieler 1** ist immer der **menschliche** lokale Spieler.
 - **Spieler 2** = der gewählte **Gegner** (Mensch oder KI).
+
+---
+
+## 10. Erweiterungs-Runde 1: Nutzererfahrung für Kinder (Ausbaustufe)
+
+**Zielgruppe:** 7–9-jährige Kinder, die NIM als Rechenübung spielen und
+weder Mod-4-Invarianz, Grundy-Werte noch Bitparität kennen. Alles muss sich
+wie ein Spiel anfühlen, nicht wie ein Formular.
+
+- **Zugabgabe direkt am Haufen:** Steine per Finger/Zeiger „wegziehen"
+  (ziehen = Auswahl, loslassen = Zug). Ein Tipp auf einen Stein markiert die
+  Menge (oberste N Steine mit Häkchen). Als Tastatur-/Formular-Fallback
+  bleiben Ziffernfeld, +/– und „Nimm!"-Button.
+- **Charaktere mit Gesichtern & Sprechblasen:** Beide Spieler erscheinen als
+  Karten mit Emoji-Gesicht, Name, Rolle und Sprechblase. Die KI reagiert:
+  - „denkt…" (geduldig, ~0,6–0,9 s),
+  - **lacht höhnisch**, wenn der Mensch in eine Verliererposition gezogen
+    hat (NIM-Summe ≠ 0),
+  - **ist wütend/genervt**, wenn sie selbst in einer Verliererposition steht
+    und NICHT mehr gewinnen kann,
+  - **feiert/ist sauer** beim Spielende je nach Ausgang.
+  Gesichter werden DOM-seitig gesetzt (kein Grundy-Jargon, Kindersprache).
+- **Rückgängig-Button:** Aktivierbar im Options-Dialog (Checkbox, Default
+  aus). Setzt den letzten Menschenzug (im KI-Modus plus die KI-Antwort)
+  zurück.
+  Funktioniert auch, während die KI gerade „denkt".
+- **Startspieler wählbar:** Zufällig (Default) / Spieler 1 / Spieler 2.
+- **Neue Runde:** Immer sichtbarer Button, ohne Overlay und ohne Parameter-
+  Änderung (Options-Overwrite bleibt unverändert).
+- **Sieg-Overlay** mit Gesicht, Botschaft und „Zurück zum Spiel" (Spielzustand
+  bleibt sichtbar).
+- **Konfetti** beim Sieg (DOM-only, keine Assets, keine Bibliothek).
+- **Rosinen-Optik:** Haufen sehen aus wie Rosinen (Braunton, unregelmäßig),
+  großer Touch-Radius, farbenfrohe Kindertypografie.
+- **Regelkonformität:** Alle Validierungs- und Zuglogik-Regeln aus §2–§6
+  bleiben byte-identisch; alle fünf bestehenden Regressionstests müssen grün
+  bleiben (und wurden es).
+
+---

@@ -3,38 +3,61 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NIM – Spiel</title>
+  <title>NIMM! – Das Rosinenspiel</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="app-header">
-    <h1>NIM</h1>
+    <h1><span class="logo">NIMM!</span><span class="tagline">Das Rosinenspiel</span></h1>
     <button type="button" id="options-btn" class="options-btn"
             aria-label="Optionen öffnen">⚙️</button>
   </header>
 
   <main class="app-main">
-    <section class="heaps" id="heaps" aria-label="Steinhaufen">
-      <!-- Haufen werden von game.js gerendert -->
+    <p class="start-hint">👆<strong> Zieh</strong> die Rosinen aus einem Haufen — oder <strong>tippe</strong> eine an. Wer die letzte nimmt, gewinnt!</p>
+
+    <section class="stage">
+      <section class="characters" id="characters" aria-label="Spieler">
+        <!-- Spieler-Gesichter werden von game.js gerendert -->
+      </section>
+
+      <section class="status" id="status" aria-live="polite">
+        <p class="status-line">
+          <span class="status-label">Aktiver Spieler:</span>
+          <span id="active-player" class="status-value">–</span>
+        </p>
+        <p class="status-line">
+          <span class="status-label">Letzter Zug:</span>
+          <span id="last-move" class="status-value">–</span>
+        </p>
+      </section>
+
+      <section class="heaps" id="heaps" aria-label="Steinhaufen">
+        <!-- Haufen werden von game.js gerendert -->
+      </section>
     </section>
 
-    <section class="status" id="status" aria-live="polite">
-      <p class="status-line">
-        <span class="status-label">Aktiver Spieler:</span>
-        <span id="active-player" class="status-value">–</span>
-      </p>
-      <p class="status-line">
-        <span class="status-label">Letzter Zug:</span>
-        <span id="last-move" class="status-value">–</span>
-      </p>
-    </section>
+    <section class="action-bar">
+      <div class="toolbar">
+        <button type="button" id="undo-btn" class="tool-btn" disabled>↩️ Rückgängig</button>
+        <button type="button" id="new-round-btn" class="tool-btn">🎲 Neue Runde</button>
+      </div>
 
-    <section class="move-input">
-      <p class="hint" id="heap-hint">Haufen auswählen, dann Steine nehmen.</p>
-      <label for="amount-input">Steine zu nehmen</label>
-      <input type="number" id="amount-input" min="1" step="1" value="1">
-      <p class="input-error" id="input-error" hidden></p>
-      <button type="button" id="draw-btn" disabled>Ziehen</button>
+      <div class="move-input">
+        <div class="pile-controls">
+          <button type="button" id="minus-btn" class="pile-btn"
+                  aria-label="Eine Rosine weniger nehmen">–</button>
+          <label class="pile-count" for="amount-input"><span id="amount-preview">–</span></label>
+          <button type="button" id="plus-btn" class="pile-btn"
+                  aria-label="Eine Rosine mehr nehmen">+</button>
+        </div>
+        <div class="pile-actions">
+          <label for="amount-input" class="pile-label">Rosinen zu nehmen</label>
+          <input type="number" id="amount-input" min="1" step="1" value="1">
+          <p class="input-error" id="input-error" hidden></p>
+          <button type="button" id="draw-btn" class="nimm-btn">Nimm!</button>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -80,6 +103,22 @@
       </div>
     </fieldset>
 
+    <fieldset class="opt-fieldset">
+      <legend>Spielebene</legend>
+      <div class="opt-radio-group">
+        <label class="opt-radio"><input type="radio" name="opt-start" value="random" checked> Zufällig</label>
+        <label class="opt-radio"><input type="radio" name="opt-start" value="1"> Ich beginne</label>
+        <label class="opt-radio"><input type="radio" name="opt-start" value="2"> Gegner beginnt</label>
+      </div>
+    </fieldset>
+
+    <div class="opt-field opt-checkbox-field">
+      <label class="opt-checkbox">
+        <input type="checkbox" id="opt-undo">
+        <span>Rückgängig-Button im Spiel aktivieren</span>
+      </label>
+    </div>
+
     <div class="opt-field">
       <label for="opt-name1">Name Spieler 1</label>
       <input type="text" id="opt-name1" value="Spieler 1">
@@ -99,8 +138,10 @@
   </div>
 
   <div id="win-overlay" class="win-overlay" hidden>
-    <!-- Sieg-Hinweis wird von game.js gesetzt -->
+    <!-- Sieg-Anzeige wird von game.js gesetzt -->
   </div>
+
+  <div id="confetti-layer" aria-hidden="true"></div>
 
   <script src="nim.js"></script>
   <script src="ai.js"></script>

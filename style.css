@@ -1,101 +1,480 @@
-/* NIM – Grundstyling (Task 01: minimal, wird in späteren Tasks ergänzt) */
+/* ============ NIMM! – Kinderfreundliches Rosinen-Design ============ */
+
+:root {
+  --sky-1: #e8f7fd;
+  --sky-2: #b6e4f5;
+  --ink: #2b2b3a;
+  --muted: #5c6577;
+  --accent: #3f7fd1;
+  --accent-dark: #2f5f9e;
+  --gold: #f5b301;
+  --danger: #a0150d;
+  --card: #ffffff;
+  --shadow: 0 2px 10px rgba(30, 50, 80, 0.12);
+}
+
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Comic Sans MS", "Chalkboard SE", "Segoe UI", -apple-system, sans-serif;
   line-height: 1.5;
-  color: #1a1a1a;
-  background: #f5f5f7;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 60%, #9fd8ee 100%) fixed;
+  min-height: 100vh;
 }
 
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
 }
 
 .app-header h1 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.35rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.logo {
+  color: #d9480f;
+  letter-spacing: 0.02em;
+  text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.7);
+}
+
+.tagline {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-shadow: none;
+}
+
+.start-hint {
+  margin: 0 1rem;
+  font-size: 0.95rem;
+  color: #3b4a63;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 10px;
+  padding: 0.4rem 0.75rem;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .app-main {
   padding: 0 1rem 2rem;
+  max-width: 960px;
+  margin: 0 auto;
 }
 
-/* Haufen-Rendering (Task 09): Flex-Box mit Wrap für schmale Screens (arch §3.5) */
+/* ============ Spieler-Gesichter (Charaktere) ============ */
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.characters {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.char-card {
+  position: relative;
+  flex: 1;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 0.7rem 0.9rem;
+  box-shadow: var(--shadow);
+  border: 3px solid transparent;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.char-card.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(245, 179, 1, 0.25), var(--shadow);
+  transform: translateY(-2px);
+}
+
+.char-card.winner {
+  border-color: var(--gold);
+  background: #fff8e1;
+}
+
+.char-face {
+  display: inline-block;
+  font-size: 2.4rem;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.char-card.thinking .char-face {
+  animation: think-bounce 0.8s ease-in-out infinite alternate;
+}
+
+.char-card.angry .char-face {
+  animation: shake 0.4s ease-in-out 3;
+}
+
+.char-card.celebrate .char-face {
+  animation: cheer 0.5s ease-in-out infinite alternate;
+}
+
+.char-name {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-top: 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.char-role {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.bubble {
+  margin-top: 0.45rem;
+  min-height: 1.5rem;
+  font-size: 0.85rem;
+  color: #33415e;
+  font-style: italic;
+}
+
+.bubble.bubble-angry {
+  color: #9a1b12;
+  font-weight: 700;
+  font-style: normal;
+}
+
+@keyframes think-bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-0.2rem); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(-0.18rem) rotate(-6deg); }
+  75% { transform: translateX(0.18rem) rotate(6deg); }
+}
+
+@keyframes cheer {
+  from { transform: translateY(0) scale(1); }
+  to { transform: translateY(-0.3rem) scale(1.12); }
+}
+
+/* ============ Status ============ */
+.status {
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  padding: 0.5rem 0.9rem;
+}
+
+.status-line {
+  margin: 0.1rem 0;
+  font-size: 0.9rem;
+}
+
+.status-label {
+  font-weight: 700;
+  color: #40506e;
+}
+
+.status-value {
+  font-weight: 600;
+}
+
+/* ============ Haufen & Rosinen ============ */
 .heaps {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+  justify-content: center;
 }
 
 .heap {
   flex: 1 1 12rem;
   min-width: 10rem;
-  background: #fff;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.heap-label {
-  margin: 0 0 0.5rem;
-  font-weight: 600;
-}
-
-/* Ausgewählter Ziel-Haufen (Task 10): deutlicher Hover-/Focus-/Selected-State */
-.heap {
-  cursor: pointer;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
-  border: 2px solid transparent;
+  background: #fffaf0;
+  border-radius: 18px;
+  padding: 0.75rem 0.75rem 0.9rem;
+  box-shadow: var(--shadow);
+  border: 3px solid #e8dcc3;
+  position: relative;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
 }
 
 .heap:hover {
-  border-color: #b9c7dd;
+  border-color: #d8b96a;
+}
+
+.heap:focus {
+  outline: none;
 }
 
 .heap:focus-visible {
-  outline: none;
-  border-color: #4a6fa5;
-  box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.35);
+  box-shadow: 0 0 0 4px rgba(63, 127, 209, 0.45);
+  border-color: var(--accent);
 }
 
 .heap.selected {
-  border-color: #4a6fa5;
-  box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.25);
-  background: #eef3fa;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(63, 127, 209, 0.25);
+  background: #eef5fd;
 }
 
-/* Kleine Fehler-/Hinweismeldung (Task 10): unaufdringlich */
-.input-error {
-  margin: 0.25rem 0;
-  font-size: 0.85rem;
-  color: #b3261e;
+.heap--empty {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.heap--empty .heap-stones {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+}
+
+.heap-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+}
+
+.heap-label {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.pile-count {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #b0621f;
+}
+
+.pile-count .count-badge {
+  background: #ffe9c7;
+  border-radius: 999px;
+  padding: 0.05rem 0.6rem;
+}
+
+.heap-stones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
 }
 
 .stone {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 50%;
-  background: #4a6fa5;
-  margin: 0 0.25rem 0.25rem 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 48% 52% 55% 45% / 55% 48% 52% 45%;
+  background: radial-gradient(circle at 32% 28%, #f4b76d 0%, #d98436 35%, #a9541c 80%);
+  box-shadow: inset -2px -3px 5px rgba(60, 20, 0, 0.45), 1px 2px 3px rgba(0, 0, 0, 0.25);
+  cursor: grab;
+  transition: transform 0.12s ease, filter 0.12s ease;
+  display: block;
+  position: relative;
+  touch-action: none;
 }
 
-/* Blink-Animation (Task 11): zu entfernende Steine blinken kurz
-   (3–4 Blips / ~0.6 s pro Durchgang), danach verschwinden sie. */
+.stone.marked {
+  transform: scale(1.28);
+  z-index: 2;
+  box-shadow: 0 0 0 3px #2f9e44, inset -2px -3px 5px rgba(60, 20, 0, 0.45), 2px 3px 6px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.stone.marked::after {
+  content: "✓";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.15; }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(0.9); }
 }
 
 .stone.blinking {
   animation: blink 0.6s ease-in-out 2;
 }
 
-/* Sieg-Overlay (Task 12): Vollbild, zentriert, deckt das Brett ab. */
+@keyframes stone-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.5) rotate(15deg); }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+.stone.popping {
+  animation: stone-pop 0.35s ease-in forwards;
+}
+
+/* ============ Aktionsleiste ============ */
+.action-bar {
+  margin-top: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.toolbar {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.tool-btn {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #33415e;
+  background: #fff;
+  border: 2px solid #cfd8e6;
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.tool-btn:hover:not(:disabled) {
+  background: #eef3fa;
+  border-color: var(--accent);
+}
+
+.tool-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.move-input {
+  background: var(--card);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 0.8rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pile-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pile-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #cfd8e6;
+  background: #fff;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #33415e;
+  cursor: pointer;
+  line-height: 1;
+  font-family: inherit;
+  transition: background 0.12s ease, transform 0.1s ease;
+}
+
+.pile-btn:hover { background: #eef3fa; }
+.pile-btn:active { transform: scale(0.94); }
+
+.pile-actions {
+  flex: 1;
+  min-width: 160px;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.pile-label {
+  font-weight: 700;
+  color: #40506e;
+  font-size: 0.9rem;
+}
+
+#amount-input {
+  width: 3.2rem;
+  min-height: 44px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-align: center;
+  border: 2px solid #cfd8e6;
+  border-radius: 10px;
+  font-family: inherit;
+  color: var(--ink);
+  background: #fff;
+}
+
+#amount-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.nimm-btn {
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(180deg, #ff8f3c, #e85d04);
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.9rem;
+  cursor: pointer;
+  min-height: 48px;
+  box-shadow: 0 3px 0 #a33d02, 0 5px 10px rgba(0, 0, 0, 0.18);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+}
+
+.nimm-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.nimm-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #a33d02;
+}
+
+.nimm-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.input-error {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--danger);
+  font-weight: 700;
+  width: 100%;
+}
+
+/* ============ Sieg-Overlay ============ */
 .win-overlay {
   position: fixed;
   inset: 0;
@@ -107,70 +486,146 @@ body {
   padding: 1rem;
   background: rgba(20, 28, 40, 0.72);
   z-index: 100;
+  text-align: center;
+}
+
+.win-overlay[hidden] {
+  display: none;
+}
+
+.win-face {
+  font-size: 4.5rem;
+  line-height: 1;
+  animation: cheer 0.5s ease-in-out infinite alternate;
 }
 
 .win-message {
   margin: 0;
   font-size: 1.75rem;
-  font-weight: 700;
+  font-weight: 800;
   color: #fff;
   text-align: center;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
-/* hidden-Attribut muss display:flex auheben, sonst blockiert das (leere)
-   Overlay alle Klicks, solange kein Gewinner da ist (Task 15: Fehler-Hygiene). */
-.win-overlay[hidden] {
-  display: none;
+.win-sub {
+  margin: 0;
+  font-size: 1rem;
+  color: #ffe9a8;
+  font-weight: 600;
+}
+
+.overlay-actions {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 #new-game-btn {
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 800;
   padding: 0.6rem 1.6rem;
   border: none;
-  border-radius: 0.5rem;
-  background: #4a6fa5;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #63c56d, #2f9e44);
   color: #fff;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.1s ease;
+  min-height: 48px;
+  font-family: inherit;
+  transition: transform 0.1s ease, filter 0.15s ease;
 }
 
-#new-game-btn:hover {
-  background: #3b5a87;
+#new-game-btn:hover { filter: brightness(1.08); }
+#new-game-btn:active { transform: scale(0.98); }
+
+.win-secondary {
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.55rem 1.3rem;
+  border-radius: 999px;
+  background: #fff;
+  color: #33415e;
+  border: 2px solid #cfd8e6;
+  cursor: pointer;
+  min-height: 48px;
+  font-family: inherit;
 }
 
-#new-game-btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.5);
+.win-secondary:hover { background: #eef3fa; }
+
+/* Konfetti */
+#confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 120;
+  overflow: hidden;
 }
 
-#new-game-btn:active {
-  transform: scale(0.98);
+.confetti {
+  position: absolute;
+  top: -5vh;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  animation: confetti-fall 3s linear forwards;
 }
 
-/* ============ Options-Dialog (Task 13) ============ */
+@keyframes confetti-fall {
+  to {
+    transform: translateY(108vh) rotate(720deg);
+  }
+}
+
+/* ============ Buttons allgemein: Fokus & Größe ============ */
 .options-btn {
-  background: none;
-  border: 1px solid #c8c8c8;
-  border-radius: 8px;
-  padding: 0.35rem 0.55rem;
-  font-size: 1.1rem;
+  background: #fff;
+  border: 2px solid #cfd8e6;
+  border-radius: 12px;
+  padding: 0.3rem 0.5rem;
+  font-size: 1.15rem;
   cursor: pointer;
   line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .options-btn:hover {
-  background: #f0f0f0;
-  border-color: #4a6fa5;
+  border-color: var(--accent);
+  background: #eef3fa;
 }
 
+#draw-btn:focus-visible,
+#new-game-btn:focus-visible,
+.options-btn:focus-visible,
+.tool-btn:focus-visible,
+.pile-btn:focus-visible,
+.win-secondary:focus-visible {
+  outline: 3px solid #2f4f7d;
+  outline-offset: 2px;
+}
+
+#amount-input:focus-visible {
+  outline: 3px solid #2f4f7d;
+  outline-offset: 2px;
+}
+
+:root {
+  --focus-ring: #2f4f7d;
+}
+
+/* ============ Options-Dialog ============ */
 .options {
   background: #fff;
   border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
   padding: 1.2rem 1.4rem 1.4rem;
-  max-width: 460px;
+  max-width: 480px;
   margin: 1.2rem auto;
 }
 
@@ -181,7 +636,7 @@ body {
 .options h2 {
   margin: 0 0 1rem;
   font-size: 1.2rem;
-  font-weight: 700;
+  font-weight: 800;
   color: #222;
 }
 
@@ -194,14 +649,14 @@ body {
 .opt-fieldset legend {
   display: block;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #444;
   margin-bottom: 0.3rem;
 }
 
 .opt-fieldset {
   border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 0.6rem 0.8rem;
 }
 
@@ -228,6 +683,22 @@ body {
 }
 
 .opt-radio input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.opt-checkbox {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+.opt-checkbox input {
+  width: 1.25rem;
+  height: 1.25rem;
   margin: 0;
   cursor: pointer;
 }
@@ -259,7 +730,8 @@ body {
 .opt-error {
   margin: 0.2rem 0 0.6rem;
   font-size: 0.85rem;
-  color: #b3261e;
+  color: var(--danger);
+  font-weight: 700;
 }
 
 .opt-error[hidden] {
@@ -275,11 +747,13 @@ body {
 
 .opt-actions button {
   padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 10px;
   border: 1px solid transparent;
   cursor: pointer;
+  font-family: inherit;
+  min-height: 44px;
 }
 
 #opt-cancel {
@@ -293,12 +767,12 @@ body {
 }
 
 #opt-apply {
-  background: #4a6fa5;
+  background: #2f9e44;
   color: #fff;
 }
 
 #opt-apply:hover {
-  background: #3d5c8a;
+  background: #27823a;
 }
 
 #opt-apply:disabled {
@@ -306,36 +780,26 @@ body {
   cursor: not-allowed;
 }
 
-#options-btn:focus-visible,
-.opt-actions button:focus-visible,
 .options input:focus-visible,
-.opt-radio input:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.4);
+.opt-radio input:focus-visible,
+.opt-checkbox input:focus-visible,
+.opt-actions button:focus-visible {
+  outline: 3px solid #2f4f7d;
+  outline-offset: 2px;
 }
 
-/* ============ Responsive / Mobile-First (Task 15, arch §3.5) ============
-   Ziel: kein Seitwärts-Overflow ab 320 px, Touch-Ziele ≥ 44 px, gestapeltes
-   Layout, gute Lesbarkeit. Desktop bleibt unverändert (keine Regression). */
-
-/* Basis: interaktive Ziele etwas größer halten (min. ~44 px bei Touch). */
-.options-btn {
-  min-width: 44px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#draw-btn,
-#new-game-btn,
-.opt-actions button {
-  min-height: 44px;
-}
-
-@media (max-width: 600px) {
+/* ============ Responsive / Mobile-First ============ */
+@media (max-width: 700px) {
   .app-main {
     padding: 0 0.75rem 1.5rem;
+  }
+
+  .characters {
+    flex-direction: row;
+  }
+
+  .char-face {
+    font-size: 1.9rem;
   }
 
   /* Haufen stapeln (einzelne Spalte) und volle Breite → kein Overflow. */
@@ -349,37 +813,30 @@ body {
     padding: 0.85rem;
   }
 
-  .heap-label {
-    font-size: 1rem;
+  .move-input {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.8rem;
   }
 
-  .stone {
-    width: 0.9rem;
-    height: 0.9rem;
+  .pile-controls {
+    justify-content: center;
   }
 
-  /* Zahleneingabe + Buttons: deutlich griffig für Touch (≥ 44 px). */
-  #amount-input {
-    min-height: 44px;
-    font-size: 1rem;
+  .pile-actions {
+    justify-content: space-between;
   }
 
-  .move-input label {
-    font-size: 1rem;
+  .nimm-btn {
+    width: 100%;
   }
 
-  #draw-btn {
-    min-height: 48px;
-    font-size: 1.05rem;
+  .win-face {
+    font-size: 3.5rem;
   }
 
   .win-message {
     font-size: 1.4rem;
-  }
-
-  #new-game-btn {
-    min-height: 48px;
-    font-size: 1.05rem;
   }
 
   .options {
@@ -416,57 +873,19 @@ body {
   }
 }
 
-/* Sehr schmale Screens (320 px): kompakter, aber immer noch ohne Overflow. */
-@media (max-width: 360px) {
-  .app-header {
-    padding: 0.6rem 0.75rem;
-  }
-
-  .app-header h1 {
-    font-size: 1.25rem;
-  }
-
-  .app-main {
-    padding: 0 0.6rem 1.25rem;
-  }
-
-  .stone {
-    width: 0.8rem;
-    height: 0.8rem;
-    margin: 0 0.2rem 0.2rem 0;
+@media (max-width: 380px) {
+  .logo {
+    font-size: 1.15rem;
   }
 }
 
-/* ============ Barrierefreiheit: Fokus- & Kontrast-Verstärkung (Task 15) ============
-   Fokus-Ringe kräftig und kontrastreich (arch §3.6). outline-color wird auf
-   alle fokussierbaren Bausteine vereinheitlicht, damit kein Ring „fehlt". */
+/* ============ Barrierefreiheit: Fokus & Kontrast ============ */
 :focus-visible {
   outline: 3px solid #2f4f7d;
   outline-offset: 2px;
 }
 
-/* Wo bisher outline:none + box-shadow genutzt wurde, Ring beibehalten, aber
-   kontrastreicher – damit Screen-Reader/Fokus klar erkennbar bleibt. */
-.heap:focus-visible,
-#new-game-btn:focus-visible,
-#options-btn:focus-visible,
-.opt-actions button:focus-visible,
-.options input:focus-visible,
-.opt-radio input:focus-visible {
-  outline: 3px solid #2f4f7d;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.45);
-}
-
-/* Fehler-Farben auf ausreichenden Kontrast (≥ 4.5:1 auf Weiß) halten. */
-.input-error,
-.opt-error {
-  color: #a0150d;
-}
-
-/* ============ prefers-reduced-motion (Task 15, arch §3.6) ============
-   Bei Wunsch nach reduzierter Bewegung: keine Animationen/Transitions,
-   Endzustand (Stein entfernt) bleibt vollständig sichtbar & funktional. */
+/* ============ prefers-reduced-motion ============ */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -478,10 +897,13 @@ body {
 
   .stone.blinking {
     animation: none;
-    opacity: 0.35; /* Endzustand sichtbar, ohne „Blipsen" */
+    opacity: 0.35;
   }
 
-  #new-game-btn:active {
-    transform: none;
+  .char-card.thinking .char-face,
+  .char-card.celebrate .char-face,
+  .char-card.angry .char-face,
+  .win-face {
+    animation: none;
   }
 }

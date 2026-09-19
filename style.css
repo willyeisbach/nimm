@@ -251,6 +251,42 @@ body {
   min-height: 2.5rem;
 }
 
+/* Issue #8: Feedback am Haufen (statt Formular-Fehlermeldung) */
+.heap--shake {
+  animation: heap-shake 0.35s ease-in-out 2;
+  border-color: #d06a3c;
+}
+
+@keyframes heap-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-0.35rem); }
+  75% { transform: translateX(0.35rem); }
+}
+
+.heap-feedback {
+  position: absolute;
+  top: -1.9rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff3e8;
+  border: 2px solid #e8935c;
+  color: #8c3f13;
+  font-weight: 800;
+  font-size: 0.9rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+  pointer-events: none;
+  z-index: 5;
+  animation: heap-feedback-in 0.2s ease-out;
+}
+
+@keyframes heap-feedback-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(0.4rem); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
 /* "leer"-Beschriftung: ruhig, ausgegraut, keine Stein-Optik. */
 .empty-note {
   font-size: 0.95rem;

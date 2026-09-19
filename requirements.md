@@ -183,9 +183,16 @@ Die Menge ist **gültig** (Zug läuft), wenn **alle** Bedingungen gelten:
   (Klassisch: `≤ Haufengröße`; 4er-Nimm/Eigene Liste: Wert ∈ `A`).
 - Menge `≤` der Größe des **treffenden Ziel-Haufens**.
 
-Gesnappte/geklemmte Werte sind legal und führen den Zug aus
-(z. B. „Eigene Liste {1,3,5}“: Tipp 4 → snappt auf 3 → 3 Steine weg).
-Ungültige oder gesperrte Werte führen **keinen** Zug aus.
+Gesnappte/geklemmte Werte sind legal und führen den Zug aus.
+Ungültige oder gesperrte Werte führen **keinen** Zug aus und melden sich
+**am betroffenen Haufen**: das Haufen-Element schüttelt kurz und zeigt eine
+Blase in Kindersprache an (Issue #8):
+- Menge > Haufengröße → „So viele sind nicht da!"
+- Menge nicht in der erlaubten Menge → erlaubte Zahlen nennen, z. B.
+  „Nur 1, 3 oder 5 Steine!" bzw. „Nur 1, 2, 3, 4 Steine!"
+Die Blase verschwindet nach ~1,6 s; kein Formular-Fehlerfeld, keine
+Alert-Dialoge, kein klemmender Lock — der nächste legale Zug ist danach
+sofort möglich.
 
 ### 5.4 Anzeige letzter Zug
 - Siehe 5.1 (Nachvollziehbarkeit, wer was wann genommen hat).

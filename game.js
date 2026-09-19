@@ -741,9 +741,11 @@ window.Game = window.Game || {};
 
   /**
    * Game.commitTap(heapIdx, n) → void
-   * Issue #3: ein Tipp auf die n-te Rosine (bzw. ein Ziehen-Loslassen mit
-   * n) = sofortiger Zug. Menge = n, gesnappt/geklemmt auf die erlaubte
-   * Menge der aktuellen Regel. Kein zweiter Bestätigungsschritt.
+   * Issue #3 + #8: ein Tipp auf die n-te Rosine (bzw. Ziehen-Loslassen mit
+   * n) führt den Zug aus — aber nur wenn n legal ist. Unauffällige Mengen
+   * (nicht in der erlaubten Menge, oder größer als der Haufen) führen KEINEN
+   * Zug aus: stattdessen Feedback am Haufen (Issue #8, statt der alten
+   * Formular-Fehlermeldung).
    */
   Game.commitTap = function (heapIdx, n) {
     if (Game.isLocked()) {
@@ -753,35 +755,95 @@ window.Game = window.Game || {};
     if (typeof heapIdx !== "number" || heapIdx < 0 || heapIdx >= s.heaps.length) {
       return;
     }
-    if (s.heaps[heapIdx] < 1) {
+    const size = s.heaps[heapIdx];
+    if (size < 1) {
       return;
     }
     if (!Number.isFinite(n) || n < 1) {
       n = 1;
     }
     s.selectedHeap = heapIdx;
-    const maxTake = Game.maxAllowable(heapIdx);
-    if (maxTake < 1) {
-      Game.renderSelection();
+
+    // --- Issue #8: Legalitätsprüfung OHNE Snap — illegale Menge ⇒ kein Zug,
+    // kurze Feedback am Haufen (Schütteln + Blase in Kindersprache).
+    if (n > size) {
+      Game.raiseHeapFeedback(heapIdx, "So viele sind nicht da!");
       return;
     }
-    let amount = Math.min(n, maxTake);
-    // snapAmount liest s.selectedHeap → vorher gesetzt (s. o.).
-    amount = (amount >= 1) ? Game.snapAmount(amount) : null;
-    if (amount === null || amount < 1) {
-      Game.renderSelection();
-      return;
+    if (s.allowed && s.allowed.length) {
+      if (s.allowed.indexOf(n) === -1) {
+        const options = s.allowed
+          .filter(function (a) { return a <= size; })
+          .sort(function (a, b) { return a - b; });
+        if (!options.length) {
+          Game.raiseHeapFeedback(heapIdx, "So viele sind nicht da!");
+          return;
+        }
+        const listText = options.join(", ");
+        Game.raiseHeapFeedback(
+          heapIdx,
+          "Nur " + listText + " " + (options.length === 1 ? "Stein!" : "Steine!")
+        );
+        return;
+      }
     }
-    // Menge transportieren: production-DOM hat kein #amount-input mehr,
-    // readAmount() fällt daher auf state.pendingAmount zurück. Beides setzen
-    // (input für Test-Mocks mit Leisten-Rest), pendingAmount ist entscheidend.
-    s.pendingAmount = amount;
+
+    // --- Legal: sofortiger Zug mit genau dieser Menge (kein 2. Schritt).
+    s.pendingAmount = n;
     const input = document.querySelector("#amount-input");
     if (input) {
-      input.value = String(amount);
+      input.value = String(n);
     }
     Game.renderSelection();
     Game.executeMove();
+  };
+
+  /**
+   * Game.raiseHeapFeedback(heapIdx, text) → void
+   * Issue #8: kurze, kindgerechte Fehlermeldung am betroffenen Haufen
+   * (Schütteln + Blase), statt der alten Formular-Fehlermeldung.
+   * Dauert ~1,6 s, dann verschwindet sie; der Haufen bleibt dabei bedienbar.
+   */
+  Game.raiseHeapFeedback = function (heapIdx, text) {
+    const heapEl = document.querySelector(
+      '#heaps .heap[data-heap-index="' + heapIdx + '"]'
+    );
+    if (!heapEl) {
+      return;
+    }
+    // Alte Feedback-Notiz + Zeitmessung aufräumen (kein Stapeln).
+    const oldNote = heapEl.querySelector
+      ? heapEl.querySelector(".heap-feedback")
+      : null;
+    if (oldNote && oldNote.remove) {
+      oldNote.remove();
+    }
+    if (heapEl._feedbackTimer) {
+      clearTimeout(heapEl._feedbackTimer);
+    }
+    // Schüttel-Animation neu starten.
+    heapEl.classList.remove("heap--shake");
+    void heapEl.offsetWidth; // Re-Flow, damit die Animation neu läuft
+    heapEl.classList.add("heap--shake");
+
+    const note = (typeof document !== "undefined" && document.createElement)
+      ? document.createElement("span")
+      : { className: "", textContent: "" };
+    note.className = "heap-feedback";
+    note.textContent = text;
+    if (typeof heapEl.appendChild === "function") {
+      heapEl.appendChild(note);
+    }
+
+    heapEl._feedbackTimer = setTimeout(function () {
+      heapEl.classList.remove("heap--shake");
+      if (typeof note.remove === "function") {
+        note.remove();
+      } else if (typeof heapEl.removeChild === "function" && heapEl.children) {
+        try { heapEl.removeChild(note); } catch (e) { /* Mock-DOM */ }
+      }
+      heapEl._feedbackTimer = undefined;
+    }, 1600);
   };
 
   /**

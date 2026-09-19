@@ -214,22 +214,27 @@ const ruleClassic = {
   assert.strictEqual(Game.state.pendingAmount, null, "the pending amount must be consumed");
 })();
 
-// --- C) Eigene Liste {1,3,5}: Tipp 4 snappt/klemmt auf erlaubte 3 ---------
+// --- C) Eigene Liste {1,3,5}: Tipp 4 (illegal) → kein Zug + Feedback am Haufen
 (function caseC() {
   const { Game, nim } = run(ruleOwn);
   reset(Game, [6], nim);
   Game.commitTap(0, 4);
-  assert.deepStrictEqual(Game.state.heaps, [3], "illegal amount must clamp to the nearest lower legal one (3)");
-  assert.strictEqual(Game.state.lastMove.amount, 3, "the clamped amount must be committed");
+  assert.deepStrictEqual(Game.state.heaps, [6], "an illegal amount (4 ∉ {1,3,5}) must NOT move");
+  assert.strictEqual(Game.state.lastMove, null, "an illegal tap must not record a move");
+  assert.strictEqual(Game.state.active, 1, "an illegal tap must keep the same player");
+  assert.strictEqual(
+    Game.state.undoStack.length, 0,
+    "an illegal tap must not push an undo snapshot"
+  );
 })();
 
-// --- D) Klassisch: Menge > Haufen klemmt auf die Haufengröße ---------------
+// --- D) Klassisch: Tipp jenseits der Haufengröße → kein Zug + Feedback ------
 (function caseD() {
   const { Game, nim } = run(ruleClassic);
   reset(Game, [3], nim);
   Game.commitTap(0, 9);
-  assert.deepStrictEqual(Game.state.heaps, [0], "tap beyond heap size must clamp to the heap size");
-  assert.strictEqual(Game.state.lastMove.amount, 3, "the clamped amount must be committed");
+  assert.deepStrictEqual(Game.state.heaps, [3], "a tap beyond the heap size must not move");
+  assert.strictEqual(Game.state.lastMove, null, "no move must be recorded for an oversized tap");
 })();
 
 // --- E) Lock: Tipp tut nichts ----------------------------------------------

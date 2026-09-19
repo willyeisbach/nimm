@@ -207,6 +207,15 @@ sofort möglich.
 
 ### 5.5 Animation (Stein-Entfernung)
 
+- **Rundenstart wartet auf „Los!" (Issue #1):** Nach Start, „Noch mal!" und
+  „Änderung übernehmen" hält die Runde an: Die Haufen sind sichtbar,
+  ein Panel auf dem Spielfeld nennt, wer beginnt („… beginnt!"), und erst
+  der Klick auf **Los!** lässt den ersten Zug zu. Beginnt die KI, denkt
+  sie danach wie bisher (600–900 ms). Beginnt ein Mensch, ist die Eingabe
+  frei. Während des Wartens gibt es **keinen** Zug-Lock — Optionen und
+  „Neue Runde" bleiben bedienbar; kein Countdown, kein automatischer Start.
+  Gilt auch bei Mensch-gegen-Mensch (kein weggeklauter erster Zug).
+
 - Wenn ein Spieler zieht, **blinken die zu entfernenden Steine** kurz (z. B.
   3–4 Blips / ~600–800 ms, CSS-Klasse `blinking` mit Opacität/Visibilität).
 - Danach werden die Steine aus dem Haufen entfernt, die Anzeige aktualisiert sich.

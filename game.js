@@ -103,6 +103,7 @@ window.Game = window.Game || {};
     allowed: null,     // erlaubte Mengen A (null = klassisch)
     pendingAmount: null, // Issue #3: vom Haufen zugewiesene Menge, bis executeMove
     lock: false,       // true während Animation/KI-Zug
+    awaitingStart: false, // Issue #1: Runde wartet auf „Los!", bevor der erste Zug laufen darf
     faces: null,       // {1:"🙂",2:"😼"} – aktuelle Gesichter (null = idle)
     bubble: {},        // {1/2: Sprechblasen-Text}
     undoStack: []      // Zug-Stapel für Rückgängig (Snapshots)
@@ -311,11 +312,68 @@ window.Game = window.Game || {};
       s.bubble[2] = "Ich bin bereit! 😊";
     }
 
+    // Issue #1: neue Runde wartet auf „Los!", bevor der erste Zug läuft —
+    // auch bei Mensch-gegen-Mensch (damit sich beide nicht den Zug klauen).
+    s.awaitingStart = true;
+
     Game.render();
     Game.renderRuleHint();
+    Game.renderStartOverlay();
     Game.renderUndoButton();
-    Game.maybeAIMove();
+    // maybeAIMove() kommt auf Game.confirmStart() — nicht automatisch jetzt.
     return s;
+  };
+
+  /**
+   * Game.renderStartOverlay() → Issue #1: zeigt das Start-Panel am
+   * Spielfeld („… beginnt!" + Los!-Button), solange s.awaitingStart.
+   * Kein Modal: die Haufen bleiben sichtbar, Optionen und „Neue Runde"
+   * funktionieren währenddessen weiter (AK5) — nur Züge sind blockiert.
+   */
+  Game.renderStartOverlay = function () {
+    const el = document.querySelector("#start-overlay");
+    if (!el) {
+      return;
+    }
+    const s = Game.state;
+    if (!s.awaitingStart) {
+      el.hidden = true;
+      return;
+    }
+    el.hidden = false;
+    const whoEl = (el.querySelector) ? el.querySelector("#start-who") : null;
+    if (whoEl) {
+      const starter = (s.active === 1) ? s.name1 : s.name2;
+      whoEl.textContent = starter + " beginnt!";
+    }
+    // Startende Karte deutlich hervorheben (AK: wer beginnt).
+    for (let p = 1; p <= 2; p++) {
+      const card = (typeof document.querySelector === "function")
+        ? document.querySelector("#char-" + p) : null;
+      if (card && card.classList && card.classList.toggle) {
+        card.classList.toggle("starting", s.awaitingStart && s.active === p);
+      }
+    }
+  };
+
+  /**
+   * Game.confirmStart() → Issue #1: „Los!" bestätigt den Rundenstart.
+   * Erst jetzt dürfen Züge laufen; beginnt die KI, denkt sie wie bisher
+   * (600–900 ms) und zieht dann. Kein Countdown (Nicht-tun).
+   */
+  Game.confirmStart = function () {
+    const s = Game.state;
+    if (!s.awaitingStart) {
+      return;
+    }
+    s.awaitingStart = false;
+    Game.renderStartOverlay();
+    Game.cancelAIMove();
+    if (Game.isAIActive()) {
+      // KI beginnt: bestehende Denkzeit + Zug, wie bisher.
+      Game.maybeAIMove();
+    }
+    // Mensch beginnt: nichts weiter — die Eingabe ist ab sofort frei.
   };
 
   /**
@@ -800,8 +858,8 @@ window.Game = window.Game || {};
    * aus s.pendingAmount (via readAmount), nicht mehr aus einem Formular.
    */
   Game.executeMove = function () {
-    if (Game.isLocked()) {
-      return;
+    if (Game.state.awaitingStart || Game.isLocked()) {
+      return; // Issue #1: vor „Los!" läuft kein Zug (auch kein KI-Zug)
     }
     if (!Game.validateInput()) {
       return;
@@ -845,8 +903,8 @@ window.Game = window.Game || {};
    * Formular-Fehlermeldung).
    */
   Game.commitTap = function (heapIdx, n) {
-    if (Game.isLocked()) {
-      return;
+    if (Game.state.awaitingStart || Game.isLocked()) {
+      return; // Issue #1: vor „Los!" läuft kein Zug
     }
     const s = Game.state;
     if (typeof heapIdx !== "number" || heapIdx < 0 || heapIdx >= s.heaps.length) {
@@ -1567,6 +1625,12 @@ window.Game = window.Game || {};
     const newRoundBtn = document.querySelector("#new-round-btn");
     if (newRoundBtn) {
       newRoundBtn.addEventListener("click", function () { Game.newGame(); });
+    }
+
+    // „Los!" (Issue #1): bestätigt den Rundenstart, danach darf die KI ziehen.
+    const startGoBtn = document.querySelector("#start-go-btn");
+    if (startGoBtn) {
+      startGoBtn.addEventListener("click", function () { Game.confirmStart(); });
     }
 
     // --- Options-Dialog (Task 13) ---

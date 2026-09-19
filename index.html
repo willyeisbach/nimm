@@ -17,6 +17,12 @@
     <p class="start-hint">👆<strong> Zieh</strong> die Rosinen aus einem Haufen — oder <strong>tippe</strong> eine an.</p>
     <p class="rule-hint" id="rule-hint" aria-live="polite"></p>
 
+    <!-- Issue #1: Runde wartet auf „Los!" – kein Modal, Haufen bleiben sichtbar -->
+    <div class="start-overlay" id="start-overlay" role="region" aria-label="Runde starten" hidden>
+      <p class="start-overlay-who" id="start-who"></p>
+      <button type="button" id="start-go-btn" class="start-go-btn">Los! 🚀</button>
+    </div>
+
     <section class="stage">
       <section class="characters" id="characters" aria-label="Spieler">
         <!-- Spieler-Gesichter werden von game.js gerendert -->

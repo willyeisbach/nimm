@@ -85,6 +85,54 @@ body {
   max-width: 60rem;
 }
 
+/* Issue #1: Start-Panel „Los!" — kein Modal, Haufen bleiben sichtbar. */
+.start-overlay {
+  margin: 0 1rem 1rem;
+  padding: 1rem 1.25rem;
+  background: #eef6ff;
+  border: 3px solid #b9d4f2;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+}
+
+.start-overlay[hidden] {
+  display: none;
+}
+
+.start-overlay-who {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1f3f6b;
+}
+
+.start-go-btn {
+  font-size: 1.3rem;
+  font-weight: 800;
+  padding: 0.6rem 2.4rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #4dabf7, #1971c2);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(25, 113, 194, 0.35);
+}
+
+.start-go-btn:active {
+  transform: translateY(1px);
+}
+
+/* Issue #1: die startende Charakterkarte wird zusätzlich betont. */
+.char-card.starting {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(49, 132, 255, 0.35), var(--shadow);
+  transform: translateY(-2px);
+}
+
 /* ============ Spieler-Gesichter (Charaktere) ============ */
 .stage {
   display: flex;

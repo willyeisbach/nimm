@@ -133,6 +133,31 @@ body {
   transform: translateY(-2px);
 }
 
+/* Issue #4: „Wer ist dran?" + „letzter Zug" stehen jetzt an der Karte. */
+.char-turn {
+  margin: 0.35rem 0 0;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #9a6a00;
+  line-height: 1.25;
+}
+
+.char-turn[hidden] {
+  display: none;
+}
+
+.char-lastmove {
+  margin: 0.3rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #44527a;
+  line-height: 1.3;
+}
+
+.char-lastmove[hidden] {
+  display: none;
+}
+
 /* Issue #6: Anzeigennamen als ersten Schritt des Start-Overlays. */
 .start-names {
   display: flex;
@@ -269,27 +294,6 @@ body {
 @keyframes cheer {
   from { transform: translateY(0) scale(1); }
   to { transform: translateY(-0.3rem) scale(1.12); }
-}
-
-/* ============ Status ============ */
-.status {
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 12px;
-  padding: 0.5rem 0.9rem;
-}
-
-.status-line {
-  margin: 0.1rem 0;
-  font-size: 0.9rem;
-}
-
-.status-label {
-  font-weight: 700;
-  color: #40506e;
-}
-
-.status-value {
-  font-weight: 600;
 }
 
 /* ============ Haufen & Rosinen ============ */

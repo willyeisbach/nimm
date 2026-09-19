@@ -261,12 +261,65 @@ window.Game = window.Game || {};
       if (roleEl) {
         roleEl.textContent = role;
       }
-      const bubble = card.querySelector(".bubble");
-      if (bubble) {
+      const bubbleEl = card.querySelector ? card.querySelector(".bubble") : null;
+      if (bubbleEl) {
         const text = (s.bubble || {})[p] || "";
-        bubble.textContent = text;
-        bubble.className = "bubble" +
+        bubbleEl.textContent = text;
+        bubbleEl.className = "bubble" +
           (text && faces[p] === "😠" ? " bubble-angry" : "");
+      }
+      // Issue #4: „Wer ist dran?" + „letzter Zug" stehen DIREKT AN der
+      // Karte (keine erwachsene Statusbox mehr). Die aktive Karte bleibt
+      // damit ohne die alte Statusbox eindeutig erkennbar (goldener Rahmen
+      // + diese kindliche Zeile).
+      const active = s.active === p;
+      // „Du bist dran!" richtet sich an den Menschen (Karte 1) bzw. beim
+      // Mensch-gegen-Menspiel an den aktiven Spieler. Bei der AKTIVEN KI
+      // bleibt die eigene Sprechblase („…denkt…") das Feedback — „Du bist
+      // dran!" wäre für eine Maschine fehl am Platz.
+      const aiCard = (p === 2 && Game.isAI(s.opponent));
+      const turnOn = active && !aiCard && !s.awaitingStart;
+      // „Du bist dran!" — an der aktiven Karte, solange die Runde läuft.
+      {
+        let turnEl = card.querySelector ? card.querySelector(".char-turn") : null;
+        if (!turnEl) {
+          turnEl = (typeof document !== "undefined" && document.createElement)
+            ? document.createElement("p") : null;
+          if (turnEl) {
+            turnEl.className = "char-turn";
+            card.appendChild(turnEl);
+          }
+        }
+        if (turnEl) {
+          turnEl.textContent = turnOn ? "Du bist dran!" : "";
+          if (turnEl.hidden !== undefined) {
+            turnEl.hidden = !turnOn;
+          }
+        }
+      }
+      // „letzter Zug" — an der ziehenden Karte, kindgerecht, ohne „–"-Zeile.
+      {
+        let lastEl = card.querySelector ? card.querySelector(".char-lastmove") : null;
+        if (!lastEl) {
+          lastEl = (typeof document !== "undefined" && document.createElement)
+            ? document.createElement("p") : null;
+          if (lastEl) {
+            lastEl.className = "char-lastmove";
+            card.appendChild(lastEl);
+          }
+        }
+        if (lastEl) {
+          const lm = s.lastMove;
+          if (lm && lm.player === p) {
+            lastEl.textContent = name + " hat " + lm.amount +
+              " Rosine" + (lm.amount === 1 ? "" : "n") +
+              " von Haufen " + (lm.heapIdx + 1) + " genommen.";
+            if (lastEl.hidden !== undefined) { lastEl.hidden = false; }
+          } else {
+            lastEl.textContent = "";
+            if (lastEl.hidden !== undefined) { lastEl.hidden = true; }
+          }
+        }
       }
     }
   };
@@ -1933,13 +1986,10 @@ window.Game = window.Game || {};
     if (input) { input.disabled = true; }
     Game.updateButtonState();
 
-    const activeEl = document.querySelector("#active-player");
-    if (activeEl) {
-      activeEl.textContent = activeName + " denkt…";
-    }
-
+    // Issue #4: „…denkt…" steht in der Sprechblase der KI-Karte (nicht
+    // mehr in einer Statuszeile am Haufen).
     Game.setFace(2, "🤔");
-    Game.setBubble(2, randomInList(THINK_LINES));
+    Game.setBubble(2, "…denkt…");
     Game.renderCharacters();
 
     const delay = 600 + Math.random() * 300;
@@ -2011,10 +2061,6 @@ window.Game = window.Game || {};
         const inp = document.querySelector("#amount-input");
         if (inp) { inp.disabled = false; }
         Game.updateButtonState();
-        const activeEl2 = document.querySelector("#active-player");
-        if (activeEl2) {
-          activeEl2.textContent = s.name2;
-        }
         Game.setFace(2, "😵");
         Game.renderCharacters();
       }
@@ -2057,10 +2103,20 @@ window.Game = window.Game || {};
         const bubbleEl = document.createElement("p");
         bubbleEl.className = "bubble";
         bubbleEl.textContent = "";
+        // Issue #4: Wer-dran-Zeile (an der aktiven Karte) + letzter Zug
+        // (an der ziehenden Karte) — ersetzt die alte Statusbox.
+        const turnEl = document.createElement("p");
+        turnEl.className = "char-turn";
+        turnEl.textContent = "";
+        const lastEl = document.createElement("p");
+        lastEl.className = "char-lastmove";
+        lastEl.textContent = "";
         card.appendChild(faceEl);
         card.appendChild(nameEl);
         card.appendChild(roleEl);
         card.appendChild(bubbleEl);
+        card.appendChild(turnEl);
+        card.appendChild(lastEl);
         charWrap.appendChild(card);
       }
     }
@@ -2117,17 +2173,9 @@ window.Game = window.Game || {};
       heapsEl.appendChild(heap);
     });
 
-    // 2. Status-Block (aria-live="polite")
-    const activeName = s.active === 1 ? s.name1 : s.name2;
-    document.querySelector("#active-player").textContent = activeName;
-
-    let lastText = "–";
-    if (s.lastMove) {
-      const name = s.lastMove.player === 1 ? s.name1 : s.name2;
-      lastText = name + " hat " + s.lastMove.amount +
-        " aus Haufen " + (s.lastMove.heapIdx + 1) + " genommen";
-    }
-    document.querySelector("#last-move").textContent = lastText;
+    // 2. „Wer ist dran?" + „letzter Zug" stehen jetzt an den Charakter-
+    //    karten (s. Issue #4) — `#status` / `#active-player` / `#last-move`
+    //    sind entfernt. renderCharacters() macht das unten.
 
     // 3. Vorschau + Auswahl + Button + Undo + Characters
     const preview = document.querySelector("#amount-preview");

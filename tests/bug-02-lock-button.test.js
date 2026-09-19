@@ -160,7 +160,9 @@ Game.maybeAIMove();
 assert.strictEqual(Game.isLocked(), true, "AI thinking must set the game lock");
 assert.strictEqual(drawButton.disabled, true, "button must be disabled during AI thinking");
 assert.strictEqual(drawButton.getAttribute("aria-disabled"), "true");
-assert.strictEqual(activePlayer.textContent, "Spieler 2 denkt…");
+// Issue #4: „…denkt…" steht jetzt in der Sprechblase der KI-Karte
+// statt in der alten Statuszeile (#active-player ist entfernt).
+assert.strictEqual(Game.state.bubble && Game.state.bubble[2], "…denkt…");
 
 Game.cancelAIMove();
 assert.strictEqual(Game.isLocked(), false, "AI cleanup must release the lock");

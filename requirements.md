@@ -165,6 +165,17 @@ Heuristik zurück (bei Baxi: s. 4.2).
   - Eigene Liste: dieselben Zahlen der Liste (z. B. „Nimm 1, 3 oder 5 Rosinen …").
   - Gewinnregel bleibt sichtbar: „Wer die letzte nimmt, gewinnt."
   - Funktioniert ohne Start-Overlay; im Overlay ist sie zusätzlich erlaubt.
+- **Wer-dran & letzter Zug über die Charakterkarten (Issue #4):** Die alte
+  Statusbox (`Aktiver Spieler:` / `Letzter Zug:` Zeilen, `#status`) ist
+  **entfernt**. „Wer ist dran?" steht jetzt an der aktiven Charakterkarte
+  (goldener Rahmen + die kindliche Zeile „Du bist dran!"). Der „letzter
+  Zug" wird an der ziehenden Karte in Kindersprache genannt, z. B.
+  „Lina hat 2 Rosinen von Haufen 2 genommen." (Haufen-Nummerierung stimmt
+  mit der Beschriftung auf dem Spielfeld überein). Vor dem ersten Zug gibt
+  es **keine** leere „–"-Zeile. Während die KI denkt, steht „…denkt…" in
+  deren Sprechblase — nicht in einer Extra-Statuszeile. Screenreader
+  erhalten Zugwechsel weiterhin über `aria-live="polite"` am
+  `#characters`-Bereich. Zuglogik ist unverändert.
 - **Anzeigennamen vor der ersten Runde (Issue #6):** Die Options-Felder
   „Dein Name" und „Name vom Gegner" stehen **vor** den übrigen Parametern
   (Haufen/Regel). Kommt ein Name noch als Platzhalter („Spieler 1" bzw.

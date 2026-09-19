@@ -35,21 +35,13 @@
     </div>
 
     <section class="stage">
-      <section class="characters" id="characters" aria-label="Spieler">
+      <section class="characters" id="characters" aria-label="Spieler" aria-live="polite">
         <!-- Spieler-Gesichter werden von game.js gerendert -->
       </section>
 
-      <section class="status" id="status" aria-live="polite">
-        <p class="status-line">
-          <span class="status-label">Aktiver Spieler:</span>
-          <span id="active-player" class="status-value">–</span>
-        </p>
-        <p class="status-line">
-          <span class="status-label">Letzter Zug:</span>
-          <span id="last-move" class="status-value">–</span>
-        </p>
-      </section>
-
+      <!-- Issue #4: „Wer ist dran?" und „letzter Zug" stehen an der
+           Charakterkarte (goldener Rahmen + Karte-Zeile/Blaube).
+           Die alte Statusbox (#active-player/#last-move) ist weg. -->
       <section class="heaps" id="heaps" aria-label="Steinhaufen">
         <!-- Haufen werden von game.js gerendert -->
       </section>

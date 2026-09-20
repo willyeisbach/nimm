@@ -1520,21 +1520,12 @@ window.Game = window.Game || {};
   };
 
   /**
-   * Game.bindDrag(heapsEl, downEv, moveEv, upEv, cancelEv) → Drag-Interaktion
+   * Game.bindDrag(heapsEl, downEv, moveEv, upEv, cancelEv) → Pointer-Interaktion
    * auf den Steinen: Finger/Zeiger auf einen Stein, über die anderen ziehen,
-   * loslassen → Menge wird ausgemacht und sofort gezogen.
-   *   - travel < 12 px  → nur Auswahl (kein Zug), Kind nutzt Nimm/+/-
-   *   - travel ≥ 12 px  → loslassen = Zug (Menge = gezogene Anzahl)
+   * oder antippen, und loslassen → Menge wird bestimmt und sofort gezogen.
    */
   Game.bindDrag = function (heapsEl, downEv, moveEv, upEv, cancelEv) {
     let drag = null;
-
-    function pointOf(ev) {
-      return {
-        x: (typeof ev.clientX === "number") ? ev.clientX : 0,
-        y: (typeof ev.clientY === "number") ? ev.clientY : 0
-      };
-    }
 
     function heapFrom(ev) {
       if (!ev.target || typeof ev.target.closest !== "function") {
@@ -1579,12 +1570,11 @@ window.Game = window.Game || {};
       // Ziehen; Vorschau/Entfernung greifen auf dieselbe Menge zu.)
       const pos = stoneIndexIn(heap, stone);
       const n = Math.max(1, pos + 1);
-      const p0 = pointOf(ev);
       // Der Haufen, auf dem der Zug begonnen wurde, bleibt fest. Ein
       // versehentliches Überqueren eines anderen Haufens darf niemals den
       // Zielhaufen wechseln; Loslassen außerhalb des Haufens soll trotzdem
       // den begonnenen Zug abschließen.
-      drag = { originIdx: idx, n: n, p0: p0, committed: false };
+      drag = { originIdx: idx, n: n, committed: false };
     };
 
     const onMove = function (ev) {
@@ -1619,8 +1609,6 @@ window.Game = window.Game || {};
       if (!drag || drag.committed) {
         return;
       }
-      const p1 = pointOf(ev);
-      const travel = Math.abs(p1.x - drag.p0.x) + Math.abs(p1.y - drag.p0.y);
       const current = drag;
       drag = null;
       const idx = current.originIdx;

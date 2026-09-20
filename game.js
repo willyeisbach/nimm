@@ -531,7 +531,6 @@ window.Game = window.Game || {};
     // Folge-Zug „mitgezogen".
     s.pendingAmount = null;
     Game.renderSelection();
-    Game.updateButtonState();
   };
 
   /**
@@ -554,256 +553,6 @@ window.Game = window.Game || {};
     });
   };
 
-  /**
-   * Game.readAmount() → Zahl | null
-   */
-  Game.readAmount = function () {
-    const el = document.querySelector("#amount-input");
-    if (el) {
-      const raw = el.value.trim();
-      if (/^\d+$/.test(raw)) {
-        const n = parseInt(raw, 10);
-        if (n >= 1) {
-          return n;
-        }
-      }
-    }
-    // Issue #3: Leiste ist entfernt — Menge kommt vom Haufen-Tipp/Zug.
-    const p = Game.state.pendingAmount;
-    return (typeof p === "number" && p >= 1) ? p : null;
-  };
-
-  /**
-   * Game.validateInput() → boolean (Task 10).
-   */
-  Game.validateInput = function () {
-    const s = Game.state;
-    if (s.selectedHeap < 0 || s.selectedHeap >= s.heaps.length) {
-      return false;
-    }
-    const amount = Game.readAmount();
-    if (amount === null) {
-      return false;
-    }
-    const heapSize = s.heaps[s.selectedHeap];
-    return window.Nim.legalAmount(s.rule, s.allowed, amount, heapSize);
-  };
-
-  /**
-   * Game.updateButtonState() → zentrales Enable/Disable + Fehlermeldung,
-   * zusätzlich +/– Knöpfe, Menge-Vorschau und Rückgängig.
-   */
-  Game.updateButtonState = function () {
-    const btn = document.querySelector("#draw-btn");
-    const input = document.querySelector("#amount-input");
-    const err = document.querySelector("#input-error");
-    const locked = Game.isLocked();
-    const valid = !locked && Game.validateInput();
-    const value = input ? String(input.value).trim() : "";
-    const hasInput = value !== "";
-
-    if (btn) {
-      btn.disabled = !valid;
-      Game._setAriaDisabled(btn, !valid);
-    }
-
-    const minusBtn = document.querySelector("#minus-btn");
-    const plusBtn = document.querySelector("#plus-btn");
-    const s = Game.state;
-    const canBump = !locked &&
-      s.selectedHeap >= 0 &&
-      s.selectedHeap < s.heaps.length &&
-      s.heaps[s.selectedHeap] >= 1;
-    if (minusBtn) {
-      minusBtn.disabled = !canBump;
-      Game._setAriaDisabled(minusBtn, !canBump);
-    }
-    if (plusBtn) {
-      plusBtn.disabled = !canBump;
-      Game._setAriaDisabled(plusBtn, !canBump);
-    }
-
-    if (err) {
-      let msg = "";
-      if (!locked && hasInput && !valid) {
-        const amount = Game.readAmount();
-        if (s.selectedHeap >= 0 && s.selectedHeap < s.heaps.length && amount !== null) {
-          const maxTake = Game.maxAllowable(s.selectedHeap);
-          const minAllowed = (s.allowed && s.allowed.length) ? s.allowed[0] : 1;
-          if (amount > maxTake || amount < 1) {
-            msg = "Nur 1 bis " + maxTake + " Rosinen aus diesem Haufen.";
-          } else {
-            msg = "Nicht gültig für den gewählten Haufen.";
-          }
-        } else {
-          msg = "Nicht gültig für den gewählten Haufen.";
-        }
-      }
-      err.textContent = msg;
-      err.hidden = msg === "";
-    }
-
-    Game.renderUndoButton();
-  };
-
-  /**
-   * Game.snapAmount(amount) → Menge | null. Im Listen-Modus (Eigene Liste)
-   * klemmt die Menge auf die nächstliegende erlaubte Menge (größte ≤ amount,
-   * sonst kleinste erlaubte). Klassisch: unverändert (mit ≤ Haufengröße).
-   */
-  Game.snapAmount = function (amount) {
-    const s = Game.state;
-    if (amount < 1) {
-      return null;
-    }
-    if (s.selectedHeap < 0 || s.selectedHeap >= s.heaps.length) {
-      return null;
-    }
-    const heapSize = s.heaps[s.selectedHeap];
-    if (s.allowed && s.allowed.length) {
-      const legal = s.allowed.filter(function (a) { return a <= heapSize; });
-      if (!legal.length) {
-        return null;
-      }
-      let best = null;
-      for (let i = 0; i < legal.length; i++) {
-        if (legal[i] <= amount) {
-          best = legal[i];
-        }
-      }
-      return best !== null ? best : legal[0];
-    }
-    // Klassisch: 1..Haufengröße alles erlaubt.
-    if (amount > heapSize) {
-      return heapSize >= 1 ? heapSize : null;
-    }
-    return amount;
-  };
-
-  /**
-   * Game.previewAmount(heapIdx, amount) → setzt Input + Vorschau + markiert
-   * die obersten `amount` Steine dieses Haufens mit ✓-Markierung.
-   * Ungültige Mengen (Listen-Modus) werden auf die nächste erlaubte geklemmt.
-   */
-  Game.previewAmount = function (heapIdx, amount) {
-    const s = Game.state;
-    const input = document.querySelector("#amount-input");
-    const preview = document.querySelector("#amount-preview");
-    const heapsEl = document.querySelector("#heaps");
-
-    // Menge unklar/0 → nur Markierung zurücksetzen, Eingabe nicht anfassen
-    // (sonst würde ein geleertes Feld auf "0" zurückspringen).
-    if (amount < 1) {
-      if (preview) {
-        preview.textContent = "–";
-      }
-      if (heapsEl) {
-        heapsEl.querySelectorAll(".stone").forEach(function (st) {
-          st.classList.remove("marked");
-        });
-      }
-      if (typeof Game.updateButtonState === "function") {
-        Game.updateButtonState();
-      }
-      return;
-    }
-
-    // Auf erlaubte Mengen klemmen (Listen-Modus) – z. B. 2 → 3 bei [1,3,5].
-    amount = Game.snapAmount(amount);
-    if (amount === null) {
-      if (preview) {
-        preview.textContent = "–";
-      }
-      if (heapsEl) {
-        heapsEl.querySelectorAll(".stone").forEach(function (st) {
-          st.classList.remove("marked");
-        });
-      }
-      if (typeof Game.updateButtonState === "function") {
-        Game.updateButtonState();
-      }
-      return;
-    }
-
-    if (input) {
-      input.value = String(amount);
-    }
-    if (preview) {
-      preview.textContent = amount;
-    }
-    if (heapsEl) {
-      heapsEl.querySelectorAll(".stone").forEach(function (st) {
-        st.classList.remove("marked");
-      });
-      const heapEl = document.querySelector('#heaps .heap[data-heap-index="' + heapIdx + '"]');
-      if (heapEl) {
-        const stones = heapEl.querySelectorAll(".stone");
-        Array.prototype.slice.call(stones, Math.max(0, stones.length - amount))
-          .forEach(function (st) {
-            st.classList.add("marked");
-          });
-      }
-    }
-    Game.updateButtonState();
-  };
-
-  /**
-   * Game.bumpAmount(delta) → +/- eine Rosine auf der Menge (mit Clamp).
-   * Im Listen-Modus ("Eigene Liste") geht es nur zwischen erlaubten
-   * Mengen (z. B. 1 → 3 → 5), nie zu illegalen Werten wie 2 oder 4.
-   */
-  Game.bumpAmount = function (delta) {
-    if (Game.isLocked()) {
-      return;
-    }
-    const s = Game.state;
-    const input = document.querySelector("#amount-input");
-    if (!input) {
-      return;
-    }
-    if (s.selectedHeap < 0 || s.selectedHeap >= s.heaps.length) {
-      return;
-    }
-    const heapSize = s.heaps[s.selectedHeap];
-    const maxTake = Game.maxAllowable(s.selectedHeap);
-    let cur = Game.readAmount();
-    if (cur === null) {
-      cur = 1;
-    }
-
-    let next;
-    if (s.allowed && s.allowed.length) {
-      // Nur erlaubte Mengen verwenden: nächste/vorherige im Listen-Modus.
-      const allowed = s.allowed.filter(function (a) { return a <= heapSize; });
-      if (delta >= 0) {
-        next = allowed.length ? allowed[0] : 1;
-        for (let i = 0; i < allowed.length; i++) {
-          if (allowed[i] > cur) {
-            next = allowed[i];
-            break;
-          }
-        }
-      } else {
-        next = 1;
-        for (let i = 0; i < allowed.length; i++) {
-          if (allowed[i] < cur) {
-            next = allowed[i];
-          }
-        }
-      }
-    } else {
-      next = cur + delta;
-      if (next < 1) {
-        next = 1;
-      }
-      if (next > maxTake) {
-        next = maxTake;
-      }
-    }
-
-    input.value = String(next);
-    Game.previewAmount(s.selectedHeap, next);
-  };
 
   // --- Issue #7: KI zählt die genommenen Rosinen laut in der Sprechblase mit ---
   const COUNT_WORDS = ["Eins", "Zwei", "Drei", "Vier", "Fünf", "Sechs",
@@ -874,17 +623,12 @@ window.Game = window.Game || {};
     }
 
     s.lock = true;
-    Game.updateButtonState();
-    const input = document.querySelector("#amount-input");
-    if (input) { input.disabled = true; }
 
     const heapEl = document.querySelector(
       '#heaps .heap[data-heap-index="' + heapIdx + '"]'
     );
     if (!heapEl) {
       s.lock = false;
-      if (input) { input.disabled = false; }
-      Game.updateButtonState();
       if (typeof cb === "function") { cb(); }
       return;
     }
@@ -917,9 +661,6 @@ window.Game = window.Game || {};
       s.heaps[heapIdx] = s.heaps[heapIdx] - amount;
 
       s.lock = false;
-      const inp = document.querySelector("#amount-input");
-      if (inp) { inp.disabled = false; }
-      Game.updateButtonState();
 
       Game.render();
       if (typeof cb === "function") { cb(); }
@@ -961,19 +702,20 @@ window.Game = window.Game || {};
   /**
    * Game.executeMove() → void
    * Issue #3: Zug per Tipp/Ziehen am Haufen (commitTap) — die Menge kommt
-   * aus s.pendingAmount (via readAmount), nicht mehr aus einem Formular.
+   * aus s.pendingAmount und wird hier noch einmal gegen die Zugregel geprüft.
    */
   Game.executeMove = function () {
     if (Game.state.awaitingStart || Game.isLocked()) {
       return; // Issue #1: vor „Los!" läuft kein Zug (auch kein KI-Zug)
     }
-    if (!Game.validateInput()) {
+    const s = Game.state;
+    const amount = s.pendingAmount;
+    if (s.selectedHeap < 0 || s.selectedHeap >= s.heaps.length ||
+        !window.Nim.legalAmount(s.rule, s.allowed, amount, s.heaps[s.selectedHeap])) {
       return;
     }
 
-    const s = Game.state;
     const heapIdx = s.selectedHeap;
-    const amount = Game.readAmount();
     s.pendingAmount = null;
 
     Game.pushHistory();
@@ -983,13 +725,6 @@ window.Game = window.Game || {};
 
       s.selectedHeap = -1;
       s.pendingAmount = null;
-      const input = document.querySelector("#amount-input");
-      if (input) { input.value = ""; }
-      const err = document.querySelector("#input-error");
-      if (err) {
-        err.hidden = true;
-        err.textContent = "";
-      }
       if (s.heaps.length === 1) {
         s.selectedHeap = 0;
       }
@@ -1051,10 +786,6 @@ window.Game = window.Game || {};
 
     // --- Legal: sofortiger Zug mit genau dieser Menge (kein 2. Schritt).
     s.pendingAmount = n;
-    const input = document.querySelector("#amount-input");
-    if (input) {
-      input.value = String(n);
-    }
     Game.renderSelection();
     Game.executeMove();
   };
@@ -1258,10 +989,6 @@ window.Game = window.Game || {};
     if (overlay) {
       overlay.hidden = true;
     }
-    const input = document.querySelector("#amount-input");
-    if (input) {
-      input.value = "";
-    }
     Game.clearBubbles();
     Game.state.undoStack = [];
     Game.state.faces = null;
@@ -1346,16 +1073,6 @@ window.Game = window.Game || {};
     // Freundlicher Hinweis an den Spieler, dessen Zug zurückgesetzt wurde.
     const player = snap.active;
     s.bubble[player] = randomInList(UNDO_HINT_LINES);
-
-    const input = document.querySelector("#amount-input");
-    if (input) {
-      input.value = "";
-    }
-    const err = document.querySelector("#input-error");
-    if (err) {
-      err.hidden = true;
-      err.textContent = "";
-    }
 
     const overlay = document.querySelector("#win-overlay");
     if (overlay) {
@@ -1673,7 +1390,7 @@ window.Game = window.Game || {};
   // --- Event-Anbindung ---------------------------------------------------------
 
   /**
-   * Game.bindEvents() → bindet Klick/Tastatur auf .heap, +/–, Undo, Round,
+   * Game.bindEvents() → bindet Klick/Tastatur auf .heap, Undo, Round,
    * Drag-Auswahl und Options-Dialog.
    */
   Game.bindEvents = function () {
@@ -1868,7 +1585,6 @@ window.Game = window.Game || {};
       // Zielhaufen wechseln; Loslassen außerhalb des Haufens soll trotzdem
       // den begonnenen Zug abschließen.
       drag = { originIdx: idx, n: n, p0: p0, committed: false };
-      Game.previewAmount(idx, n);
     };
 
     const onMove = function (ev) {
@@ -1897,7 +1613,6 @@ window.Game = window.Game || {};
           drag.n = Math.max(1, pos + 1);
         }
       }
-      Game.previewAmount(drag.originIdx, drag.n);
     };
 
     const onUp = function (ev) {
@@ -1915,8 +1630,7 @@ window.Game = window.Game || {};
         return;
       }
       // Issue #3: sowohl kurzer Tipp als auch Ziehen-Loslassen = Zug auf dem
-      // Ursprungshaufen. Menge = gezogene Anzahl, gesnappt/geklemmt auf die
-      // erlaubte Menge; kein zweiter Bestätigungsschritt (Leiste ist weg).
+      // Ursprungshaufen. Die Menge wird am betroffenen Haufen geprüft.
       Game.commitTap(idx, current.n);
     };
 
@@ -1952,9 +1666,6 @@ window.Game = window.Game || {};
     }
     const s = Game.state;
     s.lock = false;
-    const input = document.querySelector("#amount-input");
-    if (input) { input.disabled = false; }
-    Game.updateButtonState();
   };
 
   /**
@@ -1979,12 +1690,7 @@ window.Game = window.Game || {};
       return;
     }
 
-    const activeName = s.name2;
-
     s.lock = true;
-    const input = document.querySelector("#amount-input");
-    if (input) { input.disabled = true; }
-    Game.updateButtonState();
 
     // Issue #4: „…denkt…" steht in der Sprechblase der KI-Karte (nicht
     // mehr in einer Statuszeile am Haufen).
@@ -2040,13 +1746,6 @@ window.Game = window.Game || {};
           s.active = (s.active === 1) ? 2 : 1;
 
           s.selectedHeap = -1;
-          const inp = document.querySelector("#amount-input");
-          if (inp) { inp.value = ""; }
-          const err = document.querySelector("#input-error");
-          if (err) {
-            err.hidden = true;
-            err.textContent = "";
-          }
           if (s.heaps.length === 1) {
             s.selectedHeap = 0;
           }
@@ -2058,9 +1757,6 @@ window.Game = window.Game || {};
       } catch (e) {
         console.error("KI-Zug fehlgeschlagen:", e);
         s.lock = false;
-        const inp = document.querySelector("#amount-input");
-        if (inp) { inp.disabled = false; }
-        Game.updateButtonState();
         Game.setFace(2, "😵");
         Game.renderCharacters();
       }
@@ -2072,7 +1768,7 @@ window.Game = window.Game || {};
 
   /**
    * Game.render() → rendert Game.state in das vorhandene DOM (arch §3.2).
-   * Neu: Characters-Cards, Sprechblasen, Vorschau + Undo-Button-Status.
+   * Neu: Characters-Cards, Sprechblasen + Undo-Button-Status.
    */
   Game.render = function () {
     const s = Game.state;
@@ -2177,15 +1873,9 @@ window.Game = window.Game || {};
     //    karten (s. Issue #4) — `#status` / `#active-player` / `#last-move`
     //    sind entfernt. renderCharacters() macht das unten.
 
-    // 3. Vorschau + Auswahl + Button + Undo + Characters
-    const preview = document.querySelector("#amount-preview");
-    if (preview) {
-      const amt = Game.readAmount();
-      preview.textContent = (amt !== null) ? String(amt) : "–";
-    }
-
+    // 3. Auswahl + Undo + Characters
     Game.renderSelection();
-    Game.updateButtonState();
+    Game.renderUndoButton();
     Game.renderCharacters();
   };
 

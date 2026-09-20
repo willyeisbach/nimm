@@ -125,8 +125,6 @@ function newRound(Game, opponent, name1, name2) {
   Game.renderCharacters = function () {};
   Game.animateAndRemove = function (h, a, cb) { s.heaps[h] -= a; cb(); };
   Game.checkWin = function () {};
-  Game.validateInput = function () { return true; };
-  Game.readAmount = function () { return s.pendingAmount != null ? s.pendingAmount : 1; };
   Game.maybeAIMove = function () {};
   Game.start();
 }

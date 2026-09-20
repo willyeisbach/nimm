@@ -85,7 +85,7 @@ function buildDom(stoneCount) {
       if (selector === "#undo-btn" || selector === "#new-round-btn" ||
           selector === "#active-player" || selector === "#last-move" ||
           selector === "#characters") return generic;
-      return null; // #amount-input / #draw-btn / #input-error sind in production weg
+      return null; // Die entfernten Formular-Elemente werden nicht gemockt.
     },
     querySelectorAll(selector) {
       return selector === "#heaps .heap" ? [heapEl] : [];

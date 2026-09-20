@@ -51,11 +51,6 @@ function makeElement() {
   return element;
 }
 
-const drawButton = makeElement();
-const input = makeElement();
-const error = makeElement();
-const activePlayer = makeElement();
-const lastMove = makeElement();
 const heapsContainer = makeElement();
 const heap = makeElement();
 heap.dataset.heapIndex = "0";
@@ -77,11 +72,6 @@ const document = {
   readyState: "loading",
   querySelector(selector) {
     const elements = {
-      "#draw-btn": drawButton,
-      "#amount-input": input,
-      "#input-error": error,
-      "#active-player": activePlayer,
-      "#last-move": lastMove,
       "#heaps": heapsContainer,
       '#heaps .heap[data-heap-index="0"]': heap
     };
@@ -135,7 +125,6 @@ vm.runInNewContext(
 
 const Game = window.Game;
 Game.render = function () {};
-Game.updateButtonState = function () {};
 Game.state.heaps = [3];
 Game.state.selectedHeap = 0;
 Game.state.lock = false;

@@ -72,17 +72,11 @@ function makeElement() {
   return element;
 }
 
-const drawButton = makeElement();
-const input = makeElement();
-const error = makeElement();
 const activePlayer = makeElement();
 const lastMove = makeElement();
 const heapsContainer = makeElement();
 const elements = {
   "#heaps": heapsContainer,
-  "#draw-btn": drawButton,
-  "#amount-input": input,
-  "#input-error": error,
   "#active-player": activePlayer,
   "#last-move": lastMove
 };
@@ -148,7 +142,6 @@ assert.strictEqual(Game.state.selectedHeap, 1, "start must select the first non-
 
 // Also cover render() recovering from a stale empty-heap selection.
 Game.state.selectedHeap = 0;
-input.value = "1";
 Game.render();
 
 const renderedHeaps = heapsContainer.children;
@@ -215,14 +208,11 @@ heapsContainer.dispatch("keydown", {
   preventDefault() {}
 });
 assert.strictEqual(Game.state.selectedHeap, 1, "keyboard activation of an empty heap must be ignored");
-assert.strictEqual(drawButton.disabled, false, "the remaining selected legal heap must keep the button enabled");
-assert.strictEqual(error.hidden, true, "an ignored empty-heap activation must not show an input error");
 assert.strictEqual(legalHeap.getAttribute("aria-pressed"), "true");
 assert.strictEqual(emptyHeap.getAttribute("aria-pressed"), null, "an empty role=none heap must remain without aria-pressed");
 
 heapsContainer.dispatch("click", { target: otherLegalHeap });
 assert.strictEqual(Game.state.selectedHeap, 2, "another non-empty heap must remain selectable immediately");
-assert.strictEqual(drawButton.disabled, false, "a legal amount must enable the button on another heap");
 assert.strictEqual(otherLegalHeap.getAttribute("aria-pressed"), "true");
 assert.strictEqual(legalHeap.getAttribute("aria-pressed"), "false");
 

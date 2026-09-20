@@ -42,10 +42,6 @@ function makeElement() {
   };
 }
 
-const drawButton = makeElement();
-const input = makeElement();
-const error = makeElement();
-const activePlayer = makeElement();
 const heapsContainer = makeElement();
 const heap = makeElement();
 const stone = makeElement();
@@ -62,10 +58,6 @@ const document = {
   readyState: "loading",
   querySelector(selector) {
     const elements = {
-      "#draw-btn": drawButton,
-      "#amount-input": input,
-      "#input-error": error,
-      "#active-player": activePlayer,
       "#heaps": heapsContainer,
       '#heaps .heap[data-heap-index="0"]': heap
     };
@@ -130,44 +122,22 @@ Game.state.selectedHeap = 0;
 Game.state.active = 1;
 Game.state.opponent = "Mensch";
 Game.state.lock = false;
-input.value = "1";
 
-Game.updateButtonState();
-assert.strictEqual(drawButton.disabled, false, "valid input must enable an unlocked button");
-assert.strictEqual(drawButton.getAttribute("aria-disabled"), "false");
-assert.strictEqual(error.hidden, true, "valid input must hide the error");
-
-input.value = "0";
-Game.updateButtonState();
-assert.strictEqual(drawButton.disabled, true, "invalid input must disable an unlocked button");
-assert.strictEqual(drawButton.getAttribute("aria-disabled"), "true");
-assert.strictEqual(error.hidden, false, "invalid input must show the error");
-
-input.value = "1";
 Game.animateAndRemove(0, 1, function () {});
 assert.strictEqual(Game.isLocked(), true, "animation must set the game lock");
-assert.strictEqual(drawButton.disabled, true, "button must be disabled during animation lock");
-assert.strictEqual(drawButton.getAttribute("aria-disabled"), "true");
 
 Game.cancelAIMove();
 assert.strictEqual(Game.isLocked(), false, "animation cleanup must release the lock");
-assert.strictEqual(drawButton.disabled, false, "button must return to validity state after animation lock");
-assert.strictEqual(drawButton.getAttribute("aria-disabled"), "false");
 
 Game.state.active = 2;
 Game.state.opponent = "Baxi";
 Game.maybeAIMove();
 assert.strictEqual(Game.isLocked(), true, "AI thinking must set the game lock");
-assert.strictEqual(drawButton.disabled, true, "button must be disabled during AI thinking");
-assert.strictEqual(drawButton.getAttribute("aria-disabled"), "true");
-// Issue #4: „…denkt…" steht jetzt in der Sprechblase der KI-Karte
-// statt in der alten Statuszeile (#active-player ist entfernt).
+// Issue #4: „…denkt…" steht jetzt in der Sprechblase der KI-Karte.
 assert.strictEqual(Game.state.bubble && Game.state.bubble[2], "…denkt…");
 
 Game.cancelAIMove();
 assert.strictEqual(Game.isLocked(), false, "AI cleanup must release the lock");
-assert.strictEqual(drawButton.disabled, false, "button must return to validity state after AI lock");
-assert.strictEqual(drawButton.getAttribute("aria-disabled"), "false");
 
 // Restarting during AI thinking must clean up before start() resets the lock.
 const originalNewHeaps = Game.newHeaps;
@@ -182,13 +152,10 @@ Game.state.selectedHeap = 0;
 Game.state.active = 2;
 Game.state.opponent = "Baxi";
 Game.state.lock = false;
-input.disabled = false;
-input.value = "1";
 Game.maybeAIMove();
 const staleAiTimerIndex = timers.length - 1;
 const staleAiCallback = timers[staleAiTimerIndex];
 assert.strictEqual(Game.isLocked(), true, "the restart scenario must begin in AI thinking");
-assert.strictEqual(input.disabled, true, "AI thinking must disable the input");
 
 let staleAiCalls = 0;
 Game.maybeAIMove = function () {};
@@ -199,7 +166,6 @@ nextRandomValue = 1; // make the restarted game active for the AI
 Game.start();
 assert.strictEqual(timers[staleAiTimerIndex], null, "start must cancel the old AI timer");
 assert.strictEqual(Game.isLocked(), false, "start must release the old AI lock");
-assert.strictEqual(input.disabled, false, "start must re-enable the input after AI cleanup");
 staleAiCallback();
 assert.strictEqual(staleAiCalls, 0, "a late AI callback must not affect the restarted game");
 Game.animateAndRemove = originalAnimateAndRemove;
@@ -208,8 +174,6 @@ Game.animateAndRemove = originalAnimateAndRemove;
 Game.state.active = 1;
 Game.state.opponent = "Mensch";
 Game.state.lock = false;
-input.disabled = false;
-input.value = "1";
 Game.animateAndRemove(0, 1, function () {});
 const staleAnimationTimerId = Game._animTimer;
 const staleAnimationCallback = timers[staleAnimationTimerId - 1];
@@ -217,7 +181,6 @@ assert.strictEqual(Game.isLocked(), true, "the animation scenario must begin loc
 Game.start();
 assert.strictEqual(timers[staleAnimationTimerId - 1], null, "start must cancel the animation timer");
 assert.strictEqual(Game.isLocked(), false, "start must release the animation lock");
-assert.strictEqual(input.disabled, false, "start must re-enable the input after animation cleanup");
 staleAnimationCallback();
 assert.deepStrictEqual(Game.state.heaps, [3], "a late animation callback must not mutate the restarted heaps");
 
@@ -226,20 +189,16 @@ Game.maybeAIMove = originalMaybeAIMove;
 Game.state.active = 2;
 Game.state.opponent = "Baxi";
 Game.state.lock = false;
-input.disabled = false;
 Game.maybeAIMove();
 const newGameTimerIndex = timers.length - 1;
 Game.maybeAIMove = function () {};
 Game.newGame();
 assert.strictEqual(timers[newGameTimerIndex], null, "newGame must cancel an old AI timer");
 assert.strictEqual(Game.isLocked(), false, "newGame must release an old AI lock");
-assert.strictEqual(input.disabled, false, "newGame must re-enable the input");
 
 Game.state.active = 1;
 Game.state.opponent = "Mensch";
 Game.state.lock = false;
-input.disabled = false;
-input.value = "1";
 Game.animateAndRemove(0, 1, function () {});
 const applyAnimationTimerId = Game._animTimer;
 Game.validateOptions = function () { return true; };
@@ -252,7 +211,6 @@ Game.closeOptions = function () {};
 Game.applyOptions();
 assert.strictEqual(timers[applyAnimationTimerId - 1], null, "applyOptions must cancel an old animation timer");
 assert.strictEqual(Game.isLocked(), false, "applyOptions must release an old animation lock");
-assert.strictEqual(input.disabled, false, "applyOptions must re-enable the input");
 
 Game.newHeaps = originalNewHeaps;
 Game.render = originalRender;

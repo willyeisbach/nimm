@@ -127,8 +127,6 @@ function freshSetup(Game, opponent) {
     cb();
   };
   Game.checkWin = function () {};
-  Game.validateInput = function () { return true; };
-  Game.readAmount = function () { return s.pendingAmount != null ? s.pendingAmount : 1; };
   let aiCalls = 0;
   let aiMoveRan = false;
   Game.maybeAIMove = function () {

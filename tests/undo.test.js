@@ -39,18 +39,10 @@ function makeElement() {
 
 const undoBtn = makeElement();
 const newRoundBtn = makeElement();
-const drawBtn = makeElement();
-const input = makeElement();
-const err = makeElement();
-const activePlayer = makeElement();
-const lastMove = makeElement();
 const overlay = makeElement();
 const heapsContainer = makeElement();
 const heap = makeElement();
 const stone = makeElement();
-const minusBtn = makeElement();
-const plusBtn = makeElement();
-const preview = makeElement();
 const charWrap = makeElement();
 
 heap.dataset.heapIndex = "0";
@@ -62,14 +54,6 @@ stone.addEventListener = function () {};
 const elements = {
   "#undo-btn": undoBtn,
   "#new-round-btn": newRoundBtn,
-  "#draw-btn": drawBtn,
-  "#minus-btn": minusBtn,
-  "#plus-btn": plusBtn,
-  "#amount-preview": preview,
-  "#amount-input": input,
-  "#input-error": err,
-  "#active-player": activePlayer,
-  "#last-move": lastMove,
   "#win-overlay": overlay,
   "#characters": charWrap,
   "#heaps": heapsContainer,
@@ -132,7 +116,7 @@ Game.state.undoEnabled = true;
 Game.state.heaps = [5];
 Game.state.active = 1;
 Game.state.undoStack = [];
-input.value = "2";
+Game.state.pendingAmount = 2;
 
 // Mensch vs Mensch: ein Zug nach dem Anderen.
 Game.executeMove();
@@ -154,11 +138,11 @@ Game.state.undoStack = [];
 Game.state.heaps = [4];
 Game.state.active = 1;
 Game.state.lastMove = null;
-input.value = "1";
+Game.state.pendingAmount = 1;
 Game.executeMove();            // S1: 4→3, active=2
 assert.deepStrictEqual(Game.state.heaps, [3]);
 assert.strictEqual(Game.state.active, 2);
-input.value = "1";
+Game.state.pendingAmount = 1;
 Game.executeMove();            // S2 (KI): 3→2, active=1
 assert.deepStrictEqual(Game.state.heaps, [2]);
 assert.strictEqual(Game.state.active, 1);

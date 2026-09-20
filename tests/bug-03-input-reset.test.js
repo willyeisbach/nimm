@@ -1,13 +1,11 @@
 "use strict";
 
 // Issue #3: Die Mengen-Leiste ist entfernt — Zugabgabe läuft nur noch am
-// Haufen (Tipp = Zug, Ziehen-Loslassen = Zug). Die alte Datei testete das
-// Reset-Verhalten von #amount-input/#input-error; jetzt deckt sie die neuen
-// Wege auf einem Production-nahen DOM (ohne diese Elemente):
-//   A) index.html enthält kein Leisten-Markup mehr
-//   B) Tipp auf die 3. Rosine (4er-Regel, Haufen ≥ 5) nimmt genau 3 ohne 2. Klick
-//   C) Eigene Liste {1,3,5}: Tipp 2 → Snap auf erlaubte 3
-//   D) Klassisch: Menge > Haufengröße → klemmt auf die Haufengröße
+// Haufen (Tipp = Zug, Ziehen-Loslassen = Zug). Die Regression deckt ab:
+//   A) index.html und game.js enthalten keine entfernte Mengen-Leiste
+//   B) Tipp auf die 3. Rosine (4er-Regel, Haufen ≥ 5) nimmt genau 3
+//   C) Eigene Liste {1,3,5}: illegale Menge bleibt liegen und meldet sich am Haufen
+//   D) Klassisch: Menge > Haufengröße bleibt liegen und meldet sich am Haufen
 //   E) Während Lock (Animation/KI) tut Tipp nichts
 //   F) selectHeap bleibt reine Auswahl (keine Menge, kein Zug)
 const assert = require("assert");
@@ -22,12 +20,24 @@ const indexHtml = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf
   assert.ok(indexHtml.indexOf(id) === -1,
     "index.html must not contain the removed Leiste markup: " + id);
 });
+const gameSource = fs.readFileSync(path.join(__dirname, "..", "game.js"), "utf8");
+["#amount-input", "#draw-btn", "#input-error", "#minus-btn", "#plus-btn",
+ "#amount-preview", "Game.readAmount", "Game.updateButtonState",
+ "Game.previewAmount", "Game.bumpAmount"].forEach(function (legacyPath) {
+  assert.strictEqual(gameSource.indexOf(legacyPath), -1,
+    "game.js must not retain the removed form path: " + legacyPath);
+});
+const styleSource = fs.readFileSync(path.join(__dirname, "..", "style.css"), "utf8");
+[".stone.marked", ".stone.popping"].forEach(function (legacyStyle) {
+  assert.strictEqual(styleSource.indexOf(legacyStyle), -1,
+    "style.css must not retain the removed selection style: " + legacyStyle);
+});
 assert.ok(indexHtml.indexOf("Noch mal!") !== -1,
   "the toolbar (Noch mal!) must stay");
 assert.ok(indexHtml.indexOf("undo-btn") !== -1,
   "the toolbar (Rückgängig) must stay");
 
-// --- DOM-Mock (ohne #amount-input / #draw-btn / #input-error) --------------
+// --- DOM-Mock (nur die aktuelle Haufen-Interaktion) --------------------------
 function makeClassList() {
   const classes = new Set();
   return {
@@ -112,12 +122,8 @@ function buildDom() {
       if (selector === '#heaps .heap[data-heap-index="0"]') return heapEl;
       if (selector === "#undo-btn") return generic();
       if (selector === "#new-round-btn") return generic();
-      // Der Status-Block (aria-live) gehört weiterhin zum Spielfeld.
-      if (selector === "#active-player") return generic();
-      if (selector === "#last-move") return generic();
       if (selector === "#characters") return generic();
-      // Bewusst null: die Leiste ist in production entfernt.
-      return null; // #amount-input / #draw-btn / #input-error
+      return null;
     },
     querySelectorAll(selector) {
       return selector === "#heaps .heap" ? [heapEl] : [];

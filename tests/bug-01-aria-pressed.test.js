@@ -11,8 +11,12 @@ function makeElement(heapIndex) {
   return {
     dataset: heapIndex === undefined ? {} : { heapIndex: String(heapIndex) },
     classList: {
-      add(name) { classes.add(name); },
-      remove(name) { classes.delete(name); },
+      add(name) {
+        classes.add(name);
+      },
+      remove(name) {
+        classes.delete(name);
+      },
       toggle(name, force) {
         if (force === undefined ? !classes.has(name) : force) {
           classes.add(name);
@@ -21,14 +25,22 @@ function makeElement(heapIndex) {
         classes.delete(name);
         return false;
       },
-      contains(name) { return classes.has(name); }
+      contains(name) {
+        return classes.has(name);
+      },
     },
-    setAttribute(name, value) { attributes[name] = String(value); },
-    getAttribute(name) { return attributes[name] === undefined ? null : attributes[name]; },
+    setAttribute(name, value) {
+      attributes[name] = String(value);
+    },
+    getAttribute(name) {
+      return attributes[name] === undefined ? null : attributes[name];
+    },
     addEventListener() {},
     appendChild() {},
-    querySelectorAll() { return []; },
-    value: "1"
+    querySelectorAll() {
+      return [];
+    },
+    value: "1",
   };
 }
 
@@ -42,15 +54,21 @@ const document = {
   querySelectorAll(selector) {
     return selector === "#heaps .heap" ? heaps : [];
   },
-  createElement() { return makeElement(); },
-  addEventListener() {}
+  createElement() {
+    return makeElement();
+  },
+  addEventListener() {},
 };
 const window = {
   Game: {},
   Nim: {
-    parseAllowed() { return null; },
-    legalAmount() { return true; }
-  }
+    parseAllowed() {
+      return null;
+    },
+    legalAmount() {
+      return true;
+    },
+  },
 };
 
 const context = {
@@ -63,12 +81,12 @@ const context = {
   Uint32Array,
   parseInt,
   setTimeout,
-  clearTimeout
+  clearTimeout,
 };
 vm.runInNewContext(
   fs.readFileSync(path.join(__dirname, "..", "game.js"), "utf8"),
   context,
-  { filename: "game.js" }
+  { filename: "game.js" },
 );
 
 window.Game.state.heaps = [5, 7];
@@ -77,19 +95,19 @@ window.Game.selectHeap(0);
 assert.deepStrictEqual(
   heaps.map((heap) => heap.getAttribute("aria-pressed")),
   ["true", "false"],
-  "initial selection must be reflected in aria-pressed"
+  "initial selection must be reflected in aria-pressed",
 );
 
 window.Game.selectHeap(1);
 assert.deepStrictEqual(
   heaps.map((heap) => heap.getAttribute("aria-pressed")),
   ["false", "true"],
-  "changing selection must move aria-pressed to the new heap"
+  "changing selection must move aria-pressed to the new heap",
 );
 assert.deepStrictEqual(
   heaps.map((heap) => heap.classList.contains("selected")),
   [false, true],
-  "the visual selection must match aria-pressed"
+  "the visual selection must match aria-pressed",
 );
 
 console.log("Bug 01 regression test passed");

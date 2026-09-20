@@ -6,10 +6,12 @@
 > beschriebenen **Codestand** — **keine anderen Task-Dateien** lesen.
 
 ## Lies zuerst
+
 - `requirements.md` → §4.1 (Gemeinsames Modell, Grundy/NIM-Summe) und §3.2 (Grundy-Folgen je Regel).
 - `architecture.md` → §2.1 (`nim.js` berechnet die Grundy-Tabelle `g[0..maxSteine]`).
 
 ## Ausgangszustand (Code, den du vorfindest)
+
 - `nim.js` existiert und enthält bereits (aus Task 02):
   - `window.Nim = window.Nim || {};`
   - `Nim.parseAllowed(rule, ownList)` und `Nim.legalAmount(rule, A, amount, heapSize)`.
@@ -17,9 +19,11 @@
   (NIM-Summe, optimaler Zug) kommen in einer späteren Task — **mach sie hier nicht**.
 
 ## Ziel
+
 In `nim.js` (unter `window.Nim`) die Funktion implementieren:
 
 ### `Nim.grundyTable(maxStone, A)` → `g[0..maxStone]` (Array von Längen `maxStone+1`)
+
 - `g[0] = 0`.
 - Für `n = 1..maxStone`: `g[n] = mex( { g[n - a] : a ∈ A, a ≤ n } )`.
   - **mex** = kleinste **nicht** in der Menge vorhandene nicht-negative Zahl.
@@ -29,6 +33,7 @@ In `nim.js` (unter `window.Nim`) die Funktion implementieren:
   und wiederverwenden, da die KI sie pro Stellung erneut anfragen wird.
 
 ## Relevante Vorgaben (Zusammenfassung)
+
 - `g(0)=0`; `g(n)=mex{ g(n-a) : a ∈ A und a ≤ n }`; Tabelle `g[0..maxSteine]`
   **vorab einmal** berechnen. → `req §4.1`.
 - Klassisch: `g(n)=n`. 4er-Nimm (`{1,2,3,4}`): `g(n)=n mod 5`.
@@ -36,6 +41,7 @@ In `nim.js` (unter `window.Nim`) die Funktion implementieren:
 - `nim.js` bleibt **rein**, ES2020, keine Module, keine DOM-/UI-Bezüge. → `arch §2.1/§3.1`.
 
 ## Umsetzungshinweise
+
 - Für den mex-Schritt: baue die Menge der erreichbaren Werte, zähle dann aufwärts
   ab 0, bis eine Zahl fehlt.
 - Achte auf `a ≤ n` (nur Zug-Mengen, die den Haufen nicht negativ machen).
@@ -43,6 +49,7 @@ In `nim.js` (unter `window.Nim`) die Funktion implementieren:
 - `A` kann `null` (Klassisch) oder ein sortiertes Array sein (Task 02).
 
 ## Abnahmekriterien (überprüfbar – Konsole)
+
 - [ ] Klassisch (`A=null`): `g[n] === n` für `n = 0..30`.
 - [ ] 4er-Nimm (`A=[1,2,3,4]`): `g[n] === n % 5` für `n = 0..30`.
 - [ ] Eigene Liste `A=[1,3,5]`: `g[0]=0`, `g[1]=1`, und `g[2]=0`
@@ -53,5 +60,6 @@ In `nim.js` (unter `window.Nim`) die Funktion implementieren:
       Funktionen sind weiterhin intakt.
 
 ## Definition of Done
+
 `Nim.grundyTable(maxStone, A)` liefert für alle drei Regeln korrekte Grundy-Werte
 und ist performant genug für die spätere KI (Caching wünschenswert).

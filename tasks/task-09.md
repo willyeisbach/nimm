@@ -6,10 +6,12 @@
 > **keine anderen Task-Dateien** lesen.
 
 ## Lies zuerst
+
 - `requirements.md` → §5.1 (Hauptbildschirm/Layout, Aktiver Spieler, Letzter Zug) und §5.4.
 - `architecture.md` → §3.2 (DOM & Rendering), §3.6 (Barrierefreiheit minimal), §3.5 (CSS).
 
 ## Ausgangszustand (Code, den du vorfindest)
+
 - `index.html` enthält das Skelett-Markup (Haufen-Container `#heaps`,
   Status-Block mit „Aktiver Spieler" + „Letzter Zug", Input, Button, Zahnrad, Overlay).
 - `game.js` enthält bereits (aus Task 08): `Game.state`, `Game.defaults`,
@@ -18,10 +20,13 @@
 - Du **erweiterst** `game.js` um `Game.render()`.
 
 ## Ziel
+
 In `game.js` implementieren:
 
 ### `Game.render()`
+
 Rendert den aktuellen `Game.state` in das vorhandene DOM:
+
 1. **Haufen**: Für jeden Haufen in `Game.state.heaps`:
    - Ein `<div class="heap">` mit Beschriftung „Haufen `i+1`" und der Anzahl.
    - Innerhalb: `n`-mal ein `<span class="stone">` (ein Stein = ein sichtbarer
@@ -37,6 +42,7 @@ Rendert den aktuellen `Game.state` in das vorhandene DOM:
 3. `render()` wird nach `start()` (Task 08) aufgerufen; später auch nach Zügen.
 
 ## Relevante Vorgaben (Zusammenfassung)
+
 - Haufen als `<div class="heap">` mit N-`<span class="stone">`; Beschriftung
   „Haufen i" + Anzahl; bei „Neues Spiel" Container leeren & neu füllen.
   → `arch §3.2`.
@@ -47,6 +53,7 @@ Rendert den aktuellen `Game.state` in das vorhandene DOM:
   (`querySelector`, `textContent`). → `arch §3.2`.
 
 ## Umsetzungshinweise
+
 - Nutze `element.textContent`/`innerHTML` bewusst; Steine als einfache Spans.
 - Bereite eine stabile Struktur vor, die Task 10 (Auswahl-Highlight) und
   Task 11 (Blink) wiederverwenden können — z. B. `data-heap-index` auf jedem
@@ -55,6 +62,7 @@ Rendert den aktuellen `Game.state` in das vorhandene DOM:
   ggf. ein wenig CSS in `style.css` ergänzen (`.heap`, `.stone`).
 
 ## Abnahmekriterien (überprüfbar – Sichtprüfung)
+
 - [ ] Nach `Game.start()` (Defaults): genau **1** `.heap` im DOM, mit **10–20**
       `.stone`-Spans und Beschriftung „Haufen 1" + korrekter Anzahl.
 - [ ] Temporär 3 Haufen (Konfiguration gesetzt, `start()`): **3** `.heap`,
@@ -66,5 +74,6 @@ Rendert den aktuellen `Game.state` in das vorhandene DOM:
 - [ ] Keine Konsolenfehler.
 
 ## Definition of Done
+
 `Game.render()` zeigt Haufen + Steine + Status korrekt, ist responsiv,
 barrierefrei (aria-live) und bereitet stabile Hooks für Auswahl/Animation vor.

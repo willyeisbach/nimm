@@ -13,14 +13,27 @@
   --shadow: 0 2px 10px rgba(30, 50, 80, 0.12);
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
-  font-family: "Comic Sans MS", "Chalkboard SE", "Segoe UI", -apple-system, sans-serif;
+  font-family:
+    "Comic Sans MS",
+    "Chalkboard SE",
+    "Segoe UI",
+    -apple-system,
+    sans-serif;
   line-height: 1.5;
   color: var(--ink);
-  background: linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 60%, #9fd8ee 100%) fixed;
+  background: linear-gradient(
+      180deg,
+      var(--sky-1) 0%,
+      var(--sky-2) 60%,
+      #9fd8ee 100%
+    )
+    fixed;
   min-height: 100vh;
 }
 
@@ -129,7 +142,9 @@ body {
 /* Issue #1: die startende Charakterkarte wird zusätzlich betont. */
 .char-card.starting {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(49, 132, 255, 0.35), var(--shadow);
+  box-shadow:
+    0 0 0 4px rgba(49, 132, 255, 0.35),
+    var(--shadow);
   transform: translateY(-2px);
 }
 
@@ -218,12 +233,17 @@ body {
   padding: 0.7rem 0.9rem;
   box-shadow: var(--shadow);
   border: 3px solid transparent;
-  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .char-card.active {
   border-color: var(--gold);
-  box-shadow: 0 0 0 4px rgba(245, 179, 1, 0.25), var(--shadow);
+  box-shadow:
+    0 0 0 4px rgba(245, 179, 1, 0.25),
+    var(--shadow);
   transform: translateY(-2px);
 }
 
@@ -281,19 +301,34 @@ body {
 }
 
 @keyframes think-bounce {
-  from { transform: translateY(0); }
-  to { transform: translateY(-0.2rem); }
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-0.2rem);
+  }
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0) rotate(0); }
-  25% { transform: translateX(-0.18rem) rotate(-6deg); }
-  75% { transform: translateX(0.18rem) rotate(6deg); }
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  25% {
+    transform: translateX(-0.18rem) rotate(-6deg);
+  }
+  75% {
+    transform: translateX(0.18rem) rotate(6deg);
+  }
 }
 
 @keyframes cheer {
-  from { transform: translateY(0) scale(1); }
-  to { transform: translateY(-0.3rem) scale(1.12); }
+  from {
+    transform: translateY(0) scale(1);
+  }
+  to {
+    transform: translateY(-0.3rem) scale(1.12);
+  }
 }
 
 /* ============ Haufen & Rosinen ============ */
@@ -313,7 +348,10 @@ body {
   box-shadow: var(--shadow);
   border: 3px solid #e8dcc3;
   position: relative;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
   -webkit-user-select: none;
   user-select: none;
   touch-action: manipulation;
@@ -362,9 +400,16 @@ body {
 }
 
 @keyframes heap-shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-0.35rem); }
-  75% { transform: translateX(0.35rem); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-0.35rem);
+  }
+  75% {
+    transform: translateX(0.35rem);
+  }
 }
 
 .heap-feedback {
@@ -387,8 +432,14 @@ body {
 }
 
 @keyframes heap-feedback-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(0.4rem); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(0.4rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 /* "leer"-Beschriftung: ruhig, ausgegraut, keine Stein-Optik. */
@@ -435,18 +486,34 @@ body {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 48% 52% 55% 45% / 55% 48% 52% 45%;
-  background: radial-gradient(circle at 32% 28%, #f4b76d 0%, #d98436 35%, #a9541c 80%);
-  box-shadow: inset -2px -3px 5px rgba(60, 20, 0, 0.45), 1px 2px 3px rgba(0, 0, 0, 0.25);
+  background: radial-gradient(
+    circle at 32% 28%,
+    #f4b76d 0%,
+    #d98436 35%,
+    #a9541c 80%
+  );
+  box-shadow:
+    inset -2px -3px 5px rgba(60, 20, 0, 0.45),
+    1px 2px 3px rgba(0, 0, 0, 0.25);
   cursor: grab;
-  transition: transform 0.12s ease, filter 0.12s ease;
+  transition:
+    transform 0.12s ease,
+    filter 0.12s ease;
   display: block;
   position: relative;
   touch-action: none;
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.25; transform: scale(0.9); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.25;
+    transform: scale(0.9);
+  }
 }
 
 .stone.blinking {
@@ -478,7 +545,9 @@ body {
   padding: 0.45rem 1rem;
   cursor: pointer;
   min-height: 44px;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .tool-btn:hover:not(:disabled) {
@@ -522,7 +591,7 @@ body {
   font-weight: 800;
   color: #fff;
   text-align: center;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .win-sub {
@@ -550,11 +619,17 @@ body {
   cursor: pointer;
   min-height: 48px;
   font-family: inherit;
-  transition: transform 0.1s ease, filter 0.15s ease;
+  transition:
+    transform 0.1s ease,
+    filter 0.15s ease;
 }
 
-#new-game-btn:hover { filter: brightness(1.08); }
-#new-game-btn:active { transform: scale(0.98); }
+#new-game-btn:hover {
+  filter: brightness(1.08);
+}
+#new-game-btn:active {
+  transform: scale(0.98);
+}
 
 .win-secondary {
   font-size: 1rem;
@@ -569,7 +644,9 @@ body {
   font-family: inherit;
 }
 
-.win-secondary:hover { background: #eef3fa; }
+.win-secondary:hover {
+  background: #eef3fa;
+}
 
 /* Konfetti */
 #confetti-layer {

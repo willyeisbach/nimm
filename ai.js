@@ -22,9 +22,9 @@ window.AI = window.AI || {};
   }
 
   // Interner Helfer: "wie Baxi" (Spät-Zweig, req §4.2) — wird von Baxi, Ducola
-// und Muisa (S ≤ 5) gemeinsam genutzt:
-//   N ≠ 0 → optimaler Zug (NIM-Summe auf 0 zwingen), delegiert an Nim.optimalMove.
-//   N = 0 → Verliererposition: kleinstmögliche Menge (= 1, da 1 ∈ A) aus dem größten Haufen.
+  // und Muisa (S ≤ 5) gemeinsam genutzt:
+  //   N ≠ 0 → optimaler Zug (NIM-Summe auf 0 zwingen), delegiert an Nim.optimalMove.
+  //   N = 0 → Verliererposition: kleinstmögliche Menge (= 1, da 1 ∈ A) aus dem größten Haufen.
   function optimalOrFallback(position, A) {
     if (Nim.nimSum(position, A) !== 0) {
       return Nim.optimalMove(position, A);
@@ -51,7 +51,9 @@ window.AI = window.AI || {};
   //             zufällig unter allen solchen Zügen; falls keiner → Nim.randomLegal.
   //   S ≤ 10  → wie Baxi (optimal).
   function ducolaMove(position, A) {
-    const total = position.reduce(function (s, n) { return s + n; }, 0);
+    const total = position.reduce(function (s, n) {
+      return s + n;
+    }, 0);
     if (total <= 10) {
       return optimalOrFallback(position, A);
     }
@@ -83,7 +85,9 @@ window.AI = window.AI || {};
   //   S > 5  → zufälliger legaler Zug (Nim.randomLegal).
   //   S ≤ 5  → wie Baxi (optimal).
   function muisaMove(position, A) {
-    const total = position.reduce(function (s, n) { return s + n; }, 0);
+    const total = position.reduce(function (s, n) {
+      return s + n;
+    }, 0);
     if (total <= 5) {
       return optimalOrFallback(position, A);
     }
@@ -108,8 +112,9 @@ window.AI = window.AI || {};
       return muisaMove(position, A);
     }
     throw new Error(
-      'AI.chooseMove: unbekannter KI-Charakter "' + who +
-      '" (unterstützt: "Baxi", "Ducola", "Muisa").'
+      'AI.chooseMove: unbekannter KI-Charakter "' +
+        who +
+        '" (unterstützt: "Baxi", "Ducola", "Muisa").',
     );
   };
 })(window.AI, window.Nim);

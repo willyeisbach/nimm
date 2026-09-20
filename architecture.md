@@ -1,7 +1,7 @@
 # NIM – Architektur & Umsetzungsrichtlinien
 
 Diese Datei ist die **Lösungshälfte** des Projekts: `requirements.md` beschreibt
-*was* das Spiel leisten muss (Problemraum), hier wird festgelegt *wie* es
+_was_ das Spiel leisten muss (Problemraum), hier wird festgelegt _wie_ es
 umgesetzt wird. Der verbindliche Rahmen ist **`requirements.md` Abschnitt 7** –
 lokale Ausführung ohne jede Laufzeit-Voraussetzung, plattformunabhängig, ohne
 Build-Schritt und ohne externe Abhängigkeiten.
@@ -16,15 +16,15 @@ Die Anforderung 7 hat **exakt eine** Eigenschaft, die die Technologie fast schon
 vorgibt: Die ausgelieferten Dateien müssen per Doppelklick/Datei-Link im Browser
 laufen, ohne dass irgendein Werkzeug dazwischenschießt.
 
-| Kriterium (A7)          | HTML/CSS/JS-Vanilla | Framework (React, Vue, Svelte, …) | Node/Bundler-Setup |
-| ----------------------- | :-----------------: | :-------------------------------: | :----------------: |
-| Doppelklick läuft       |           ✅          |           ✅ (nach Build)         |          ❌         |
-| Keine Laufzeit/Toolchain|          ✅           |          ✅ (nach Build)          |         ❌          |
-| Build-Schritt           |           ❌          |              ✅ (erforderlich)    |    ✅ (erforderl.)  |
-| Externe Abhängigkeiten  |           ❌          |        ✅ (npm-Pakete)            |       ✅ (npm)      |
-| Win/mac/Linux identisch |           ✅          |                  ✅               |         ✅         |
+| Kriterium (A7)           | HTML/CSS/JS-Vanilla | Framework (React, Vue, Svelte, …) | Node/Bundler-Setup |
+| ------------------------ | :-----------------: | :-------------------------------: | :----------------: |
+| Doppelklick läuft        |         ✅          |          ✅ (nach Build)          |         ❌         |
+| Keine Laufzeit/Toolchain |         ✅          |          ✅ (nach Build)          |         ❌         |
+| Build-Schritt            |         ❌          |         ✅ (erforderlich)         |  ✅ (erforderl.)   |
+| Externe Abhängigkeiten   |         ❌          |          ✅ (npm-Pakete)          |      ✅ (npm)      |
+| Win/mac/Linux identisch  |         ✅          |                ✅                 |         ✅         |
 
-Ein Framework wäre *nutzbar*, verletzt aber **zwei harte Anforderungen** (kein
+Ein Framework wäre _nutzbar_, verletzt aber **zwei harte Anforderungen** (kein
 Build-Schritt, keine externen Abhängigkeiten) – es bräuchte npm/Node,
 Knotenpakete und ein Compile. Für ein zweispieler-NIM mit ~10 DOM-Elementen und
 einer reinen Zustand-/Regellogik ist das Overhead ohne Mehrwert. **Entscheidung:
@@ -43,6 +43,7 @@ ausgeliefert, in der **Datei `index.html`** per `<script src="…">` ohne
 wird durch die Reihenfolge der `<script>`-Tags gesteuert.
 
 Folgen:
+
 - Kein `import` / `export` in JS-Dateien.
 - Gemeinsamer globaler (bzw. `window`) Namespace – die Module teilen sich über
   explizite `window.*`-Ankerpunkte (s. 3.4).
@@ -70,13 +71,13 @@ nimm/
 
 ### 2.1 Zuständigkeiten
 
-| Datei        | Verantwortet                                                              | Dürft nicht                                                       |
-| ------------ | ------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `nim.js`     | Parse/Validierung der Zugregel; Grundy-Tabelle `g[0..maxSteine]`; legalerZug(); optimalerZug(); NIM-Summe | UI, DOM, KI-Charakter, Zustand                                    |
-| `ai.js`      | Baxi/Ducola/Muisa-Strategie; `chooseMove(position, allowed)`; „Denk"-Delay | Grundy-Logik (verwendet nur `nim.js`), DOM, UI                    |
-| `game.js`    | Spielzustand; Rendering; Event-Listener; Animation; Options-Dialog; Sieg  | Grundy-/KI-Logik (nur Aufruf), DOM-Kreation von scratch           |
-| `style.css`  | Alle Visibilität, Responsiveness, `@keyframes blink`, Sieg-Highlight     | JS-Logik                                                          |
-| `index.html` | Statik-Markup, `<script>`-Reihenfolge, `<link>` zu CSS                  | Inline-JS (nur `<script src>`), Inline-CSS                         |
+| Datei        | Verantwortet                                                                                              | Dürft nicht                                             |
+| ------------ | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `nim.js`     | Parse/Validierung der Zugregel; Grundy-Tabelle `g[0..maxSteine]`; legalerZug(); optimalerZug(); NIM-Summe | UI, DOM, KI-Charakter, Zustand                          |
+| `ai.js`      | Baxi/Ducola/Muisa-Strategie; `chooseMove(position, allowed)`; „Denk"-Delay                                | Grundy-Logik (verwendet nur `nim.js`), DOM, UI          |
+| `game.js`    | Spielzustand; Rendering; Event-Listener; Animation; Options-Dialog; Sieg                                  | Grundy-/KI-Logik (nur Aufruf), DOM-Kreation von scratch |
+| `style.css`  | Alle Visibilität, Responsiveness, `@keyframes blink`, Sieg-Highlight                                      | JS-Logik                                                |
+| `index.html` | Statik-Markup, `<script>`-Reihenfolge, `<link>` zu CSS                                                    | Inline-JS (nur `<script src>`), Inline-CSS              |
 
 ---
 
@@ -138,7 +139,7 @@ nimm/
 - `game.js` am Dateiende enthält:
   ```js
   window.addEventListener("DOMContentLoaded", () => {
-    Game.init();   // legt defaults, Haufen, UI-Listener an
+    Game.init(); // legt defaults, Haufen, UI-Listener an
   });
   ```
 - **Kein `defer`/`async`** nötig – die Skripte sind am Ende des `<body>`,
@@ -154,7 +155,7 @@ nimm/
 - **Blink:** `@keyframes blink { 0%,100% {opacity:1} 50% {opacity:0.15} }`
   mit `animation: blink 0.6s ease-in-out 2`.
 - **Farben/Fonts:** System-Fonts (`-apple-system, BlinkMacSystemFont,
-  "Segoe UI", Roboto, sans-serif`), keine Web-Fonts (A7: keine externen
+"Segoe UI", Roboto, sans-serif`), keine Web-Fonts (A7: keine externen
   Zugriffe).
 
 ### 3.6 Barrierefreiheit (minimal)
@@ -167,21 +168,21 @@ nimm/
 
 ### 3.7 Fehler- & Edge-Cases
 
-| Fall                                    | Verhalten                                            |
-| --------------------------------------- | ---------------------------------------------------- |
-| Ungültige „Eigene Liste" (ohne `1`)    | `nim.js` wirft/returnt `null`; `game.js` zeigt Fehler, Dialog bleibt offen |
-| Zug-Menge > Haufengröße                 | Button „Ziehen" disabled                             |
-| KI in Verliererposition (N=0)           | `ai.js` greift auf Heuristik (Baxi: 1 aus größtem)  |
-| Nur ein Haufen                          | Automatisch ausgewählt; Eingabe-Feld direkt aktiv    |
-| Browser-Konsolenfehler                  | Ziel: **null** (A8) – `try/catch` + klare Fehlermeldungen im UI |
+| Fall                                | Verhalten                                                                  |
+| ----------------------------------- | -------------------------------------------------------------------------- |
+| Ungültige „Eigene Liste" (ohne `1`) | `nim.js` wirft/returnt `null`; `game.js` zeigt Fehler, Dialog bleibt offen |
+| Zug-Menge > Haufengröße             | Button „Ziehen" disabled                                                   |
+| KI in Verliererposition (N=0)       | `ai.js` greift auf Heuristik (Baxi: 1 aus größtem)                         |
+| Nur ein Haufen                      | Automatisch ausgewählt; Eingabe-Feld direkt aktiv                          |
+| Browser-Konsolenfehler              | Ziel: **null** (A8) – `try/catch` + klare Fehlermeldungen im UI            |
 
 ### 3.8 Testbarkeit (ohne Test-Framework)
 
 - `nim.js` und `ai.js` sind **rein** (keine DOM-/UI-Abhängigkeit) und können
   in einer Browser-Konsole (DevTools → Console) direkt mit:
   ```js
-  Nim.optimalMove([10, 7, 3], { allowed: [1,2,3,4] });
-  AI.chooseMove([10, 7, 3], { allowed: [1,2,3,4] }, "Baxi");
+  Nim.optimalMove([10, 7, 3], { allowed: [1, 2, 3, 4] });
+  AI.chooseMove([10, 7, 3], { allowed: [1, 2, 3, 4] }, "Baxi");
   ```
   manuell geprüft werden.
 - Abnahmekriterien aus `requirements.md` § 8 sind die „Tests" – sie werden
@@ -191,12 +192,12 @@ nimm/
 
 ## 4. Kompatibilitäts-Matrix (Ziel-Plattformen)
 
-| Browser                 | Mindestversion | Anmerkung                              |
-| ----------------------- | :------------: | -------------------------------------- |
-| Chrome / Edge (Chromium)| aktuelle 2     | Primär-Ziel                            |
-| Firefox                 | aktuelle       | `file://` CORS: keine ES-Module → OK   |
-| Safari (macOS/iOS)      | aktuelle       | `file://`: kein `fetch` nötig          |
-| Opera / Brave (Chromium)| aktuelle       | Wie Chrome                             |
+| Browser                  | Mindestversion | Anmerkung                            |
+| ------------------------ | :------------: | ------------------------------------ |
+| Chrome / Edge (Chromium) |   aktuelle 2   | Primär-Ziel                          |
+| Firefox                  |    aktuelle    | `file://` CORS: keine ES-Module → OK |
+| Safari (macOS/iOS)       |    aktuelle    | `file://`: kein `fetch` nötig        |
+| Opera / Brave (Chromium) |    aktuelle    | Wie Chrome                           |
 
 **Nicht unterstützt (bewusst):** IE11 (veraltet, keine `const`/`let`/
 arrow-func). Alle Ziel-Browser sind Chromium- oder Gecko-aktuell.

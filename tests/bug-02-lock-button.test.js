@@ -16,8 +16,12 @@ function makeElement() {
     value: "1",
     dataset: {},
     classList: {
-      add(name) { classes.add(name); },
-      remove(name) { classes.delete(name); },
+      add(name) {
+        classes.add(name);
+      },
+      remove(name) {
+        classes.delete(name);
+      },
       toggle(name, force) {
         if (force === undefined ? !classes.has(name) : force) {
           classes.add(name);
@@ -26,9 +30,13 @@ function makeElement() {
         classes.delete(name);
         return false;
       },
-      contains(name) { return classes.has(name); }
+      contains(name) {
+        return classes.has(name);
+      },
     },
-    setAttribute(name, value) { attributes[name] = String(value); },
+    setAttribute(name, value) {
+      attributes[name] = String(value);
+    },
     getAttribute(name) {
       return attributes[name] === undefined ? null : attributes[name];
     },
@@ -36,9 +44,11 @@ function makeElement() {
       listeners[name] = handler;
     },
     appendChild() {},
-    querySelectorAll() { return []; },
+    querySelectorAll() {
+      return [];
+    },
     remove() {},
-    focus() {}
+    focus() {},
   };
 }
 
@@ -59,16 +69,20 @@ const document = {
   querySelector(selector) {
     const elements = {
       "#heaps": heapsContainer,
-      '#heaps .heap[data-heap-index="0"]': heap
+      '#heaps .heap[data-heap-index="0"]': heap,
     };
     return elements[selector] || null;
   },
   querySelectorAll(selector) {
     return selector === "#heaps .heap" ? [heap] : [];
   },
-  createElement() { return makeElement(); },
+  createElement() {
+    return makeElement();
+  },
   addEventListener() {},
-  contains() { return true; }
+  contains() {
+    return true;
+  },
 };
 
 const window = {
@@ -77,17 +91,21 @@ const window = {
     getRandomValues(buffer) {
       buffer[0] = nextRandomValue;
       return buffer;
-    }
+    },
   },
   Nim: {
-    parseAllowed() { return null; },
+    parseAllowed() {
+      return null;
+    },
     legalAmount(rule, allowed, amount, heapSize) {
       return amount >= 1 && amount <= heapSize;
-    }
+    },
   },
   AI: {
-    chooseMove() { return { heapIdx: 0, amount: 1 }; }
-  }
+    chooseMove() {
+      return { heapIdx: 0, amount: 1 };
+    },
+  },
 };
 
 const context = {
@@ -107,13 +125,13 @@ const context = {
     if (id !== undefined) {
       timers[id - 1] = null;
     }
-  }
+  },
 };
 
 vm.runInNewContext(
   fs.readFileSync(path.join(__dirname, "..", "game.js"), "utf8"),
   context,
-  { filename: "game.js" }
+  { filename: "game.js" },
 );
 
 const Game = window.Game;
@@ -127,7 +145,11 @@ Game.animateAndRemove(0, 1, function () {});
 assert.strictEqual(Game.isLocked(), true, "animation must set the game lock");
 
 Game.cancelAIMove();
-assert.strictEqual(Game.isLocked(), false, "animation cleanup must release the lock");
+assert.strictEqual(
+  Game.isLocked(),
+  false,
+  "animation cleanup must release the lock",
+);
 
 Game.state.active = 2;
 Game.state.opponent = "Baxi";
@@ -144,7 +166,9 @@ const originalNewHeaps = Game.newHeaps;
 const originalRender = Game.render;
 const originalMaybeAIMove = Game.maybeAIMove;
 const originalAnimateAndRemove = Game.animateAndRemove;
-Game.newHeaps = function () { return [3]; };
+Game.newHeaps = function () {
+  return [3];
+};
 Game.render = function () {};
 Game.maybeAIMove = originalMaybeAIMove;
 Game.state.heaps = [3];
@@ -155,7 +179,11 @@ Game.state.lock = false;
 Game.maybeAIMove();
 const staleAiTimerIndex = timers.length - 1;
 const staleAiCallback = timers[staleAiTimerIndex];
-assert.strictEqual(Game.isLocked(), true, "the restart scenario must begin in AI thinking");
+assert.strictEqual(
+  Game.isLocked(),
+  true,
+  "the restart scenario must begin in AI thinking",
+);
 
 let staleAiCalls = 0;
 Game.maybeAIMove = function () {};
@@ -164,10 +192,22 @@ Game.animateAndRemove = function () {
 };
 nextRandomValue = 1; // make the restarted game active for the AI
 Game.start();
-assert.strictEqual(timers[staleAiTimerIndex], null, "start must cancel the old AI timer");
-assert.strictEqual(Game.isLocked(), false, "start must release the old AI lock");
+assert.strictEqual(
+  timers[staleAiTimerIndex],
+  null,
+  "start must cancel the old AI timer",
+);
+assert.strictEqual(
+  Game.isLocked(),
+  false,
+  "start must release the old AI lock",
+);
 staleAiCallback();
-assert.strictEqual(staleAiCalls, 0, "a late AI callback must not affect the restarted game");
+assert.strictEqual(
+  staleAiCalls,
+  0,
+  "a late AI callback must not affect the restarted game",
+);
 Game.animateAndRemove = originalAnimateAndRemove;
 
 // The same cleanup must protect a restart during an animation timer.
@@ -177,12 +217,28 @@ Game.state.lock = false;
 Game.animateAndRemove(0, 1, function () {});
 const staleAnimationTimerId = Game._animTimer;
 const staleAnimationCallback = timers[staleAnimationTimerId - 1];
-assert.strictEqual(Game.isLocked(), true, "the animation scenario must begin locked");
+assert.strictEqual(
+  Game.isLocked(),
+  true,
+  "the animation scenario must begin locked",
+);
 Game.start();
-assert.strictEqual(timers[staleAnimationTimerId - 1], null, "start must cancel the animation timer");
-assert.strictEqual(Game.isLocked(), false, "start must release the animation lock");
+assert.strictEqual(
+  timers[staleAnimationTimerId - 1],
+  null,
+  "start must cancel the animation timer",
+);
+assert.strictEqual(
+  Game.isLocked(),
+  false,
+  "start must release the animation lock",
+);
 staleAnimationCallback();
-assert.deepStrictEqual(Game.state.heaps, [3], "a late animation callback must not mutate the restarted heaps");
+assert.deepStrictEqual(
+  Game.state.heaps,
+  [3],
+  "a late animation callback must not mutate the restarted heaps",
+);
 
 // newGame() and applyOptions() both route through the same restart cleanup.
 Game.maybeAIMove = originalMaybeAIMove;
@@ -193,24 +249,46 @@ Game.maybeAIMove();
 const newGameTimerIndex = timers.length - 1;
 Game.maybeAIMove = function () {};
 Game.newGame();
-assert.strictEqual(timers[newGameTimerIndex], null, "newGame must cancel an old AI timer");
-assert.strictEqual(Game.isLocked(), false, "newGame must release an old AI lock");
+assert.strictEqual(
+  timers[newGameTimerIndex],
+  null,
+  "newGame must cancel an old AI timer",
+);
+assert.strictEqual(
+  Game.isLocked(),
+  false,
+  "newGame must release an old AI lock",
+);
 
 Game.state.active = 1;
 Game.state.opponent = "Mensch";
 Game.state.lock = false;
 Game.animateAndRemove(0, 1, function () {});
 const applyAnimationTimerId = Game._animTimer;
-Game.validateOptions = function () { return true; };
-Game.selectedRule = function () { return "4er"; };
-Game.selectedOpponent = function () { return "Mensch"; };
+Game.validateOptions = function () {
+  return true;
+};
+Game.selectedRule = function () {
+  return "4er";
+};
+Game.selectedOpponent = function () {
+  return "Mensch";
+};
 Game.readOptionInt = function (id) {
-  return id === "opt-max-heaps" ? 1 : (id === "opt-max-stones" ? 3 : 0);
+  return id === "opt-max-heaps" ? 1 : id === "opt-max-stones" ? 3 : 0;
 };
 Game.closeOptions = function () {};
 Game.applyOptions();
-assert.strictEqual(timers[applyAnimationTimerId - 1], null, "applyOptions must cancel an old animation timer");
-assert.strictEqual(Game.isLocked(), false, "applyOptions must release an old animation lock");
+assert.strictEqual(
+  timers[applyAnimationTimerId - 1],
+  null,
+  "applyOptions must cancel an old animation timer",
+);
+assert.strictEqual(
+  Game.isLocked(),
+  false,
+  "applyOptions must release an old animation lock",
+);
 
 Game.newHeaps = originalNewHeaps;
 Game.render = originalRender;

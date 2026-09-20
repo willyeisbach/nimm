@@ -1,0 +1,19 @@
+{
+  "name": "nimm",
+  "version": "1.0.0",
+  "description": "NIMM! – Das Rosinenspiel (lokale Vanilla-HTML/CSS/JS-App, läuft per file:// ohne Build)",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "test": "for t in tests/*.test.js; do node \"$t\"; done",
+    "check": "npm run format:check && npm run lint"
+  },
+  "devDependencies": {
+    "eslint": "^10.11.0",
+    "globals": "^17.12.0",
+    "prettier": "^3.9.8"
+  }
+}

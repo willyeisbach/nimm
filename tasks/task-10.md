@@ -6,10 +6,12 @@
 > **keine anderen Task-Dateien** lesen.
 
 ## Lies zuerst
+
 - `requirements.md` → §5.1 (Haufen-Auswahl, Eingabe, Button), §5.3 (Zugabgabe & Validierung), §6.
 - `architecture.md` → §3.2 (DOM), §3.6 (Barrierefreiheit: `tabindex`, Labels).
 
 ## Ausgangszustand (Code, den du vorfindest)
+
 - `index.html` enthält Input (`id` für „Steine zu nehmen") und Button „Ziehen".
 - `game.js` enthält bereits (aus Task 08 + 09): `Game.state`, `Game.start()`,
   `Game.render()` (Haufen mit `data-heap-index`), Status-Rendering.
@@ -18,6 +20,7 @@
 - Du **erweiterst** `game.js` um Auswahl + Validierung + Button-Enable-Logik.
 
 ## Ziel
+
 In `game.js` implementieren:
 
 1. **Ziel-Haufen-Auswahl**:
@@ -40,6 +43,7 @@ In `game.js` implementieren:
    - Ungültige Eingabe → kleine Fehler-/Hinweismeldung im UI.
 
 ## Relevante Vorgaben (Zusammenfassung)
+
 - Haufen-Auswahl per Klick, markiert/highlighted; **1 Haufen → automatisch
   Ziel**. → `req §5.1`.
 - Eingabefeld gültig: positive Ganzzahl ≥ 1, in erlaubter Menge,
@@ -49,6 +53,7 @@ In `game.js` implementieren:
   `<label for>` auf jedem Input. → `arch §3.6`.
 
 ## Umsetzungshinweise
+
 - Zentrale `updateButtonState()`-Funktion, die Input-Wert, `selectedHeap` und
   Regel zusammenführt und den Button-Status + Fehlermeldung setzt.
 - Bei **Klassisch** ist „in erlaubter Menge" trivial (nur `≤ Haufengröße`);
@@ -57,6 +62,7 @@ In `game.js` implementieren:
 - Halte `Game.state.selectedHeap` konsistent mit dem DOM-Highlight.
 
 ## Abnahmekriterien (überprüfbar – Sichtprüfung/Konsole)
+
 - [ ] **4er-Nimm**, Haufen=10: Eingabe `4` → Button **aktiv**; `5` → **inaktiv**;
       `0`/leer → inaktiv.
 - [ ] **Klassisch**, Haufen=10: `10` → aktiv; `11` → inaktiv; `1` → aktiv.
@@ -70,5 +76,6 @@ In `game.js` implementieren:
 - [ ] Keine Konsolenfehler.
 
 ## Definition of Done
+
 Ziel-Haufen-Auswahl (Klick + Tastatur), Input-Validierung und Button-Enable
 sind reaktiv und korrekt für alle drei Zugregeln; Barrierefreiheit erfüllt.

@@ -9,13 +9,13 @@ Umsetzungshinweise, Abnahmekriterien und Definition of Done —
 
 **Aufbau (Bottom-up, der Abhängigkeitsrichtung `nim.js → ai.js → game.js` folgend):**
 
-| Phase | Tasks                | Ergebnis                                                    |
-| ----- | -------------------- | ----------------------------------------------------------- |
-| 0     | 1                    | Läuft per Doppelklick (`file://`), leere, fehlerfreie Hülle |
-| 1     | 2, 3, 4              | `nim.js` rein & per Konsole testbar                         |
-| 2     | 5, 6, 7              | `ai.js` rein & per Konsole testbar                          |
-| 3     | 8 … 14               | `game.js`: Zustand, UI, Animation, Optionen, KI-Anschluss   |
-| 4     | 15, 16               | Barrierefreiheit/Responsiveness + Abnahme (`requirements §8`, `arch §5`) |
+| Phase | Tasks   | Ergebnis                                                                 |
+| ----- | ------- | ------------------------------------------------------------------------ |
+| 0     | 1       | Läuft per Doppelklick (`file://`), leere, fehlerfreie Hülle              |
+| 1     | 2, 3, 4 | `nim.js` rein & per Konsole testbar                                      |
+| 2     | 5, 6, 7 | `ai.js` rein & per Konsole testbar                                       |
+| 3     | 8 … 14  | `game.js`: Zustand, UI, Animation, Optionen, KI-Anschluss                |
+| 4     | 15, 16  | Barrierefreiheit/Responsiveness + Abnahme (`requirements §8`, `arch §5`) |
 
 > **Konvention:** „Konsole-Test" heißt: Datei in `index.html` geladen, DevTools →
 > Console, Funktion direkt aufrufen (s. `architecture.md §3.8`). „Sichtprüfung"
@@ -38,24 +38,24 @@ Eine Task gilt als erledigt (✅), wenn **alle** folgenden Punkte erfüllt sind:
 
 > **Status-Legende:** ✅ erledigt · ⬜ offen · 🚧 in Arbeit
 
-| #    | Datei         | Phase | Kurzbeschreibung                                             | Abhängig von | Status |
-| ---- | ------------- | ----- | ------------------------------------------------------------ | ------------ | ------ |
-| 1    | `task-01.md`  | 0     | Projektgerüst: 5 Dateien, Skript-Reihenfolge, läuft per `file://` | –            | ✅ |
-| 2    | `task-02.md`  | 1     | `nim.js`: Zugregel-Parser (`parseAllowed`, `legalAmount`)    | 1            | ✅ |
-| 3    | `task-03.md`  | 1     | `nim.js`: Grundy-Tabelle via mex                             | 2            | ✅ |
-| 4    | `task-04.md`  | 1     | `nim.js`: NIM-Summe, Legitimität, optimaler & zufälliger Zug | 2, 3         | ✅ |
-| 5    | `task-05.md`  | 2     | `ai.js`: Baxi (immer optimal)                                | 4            | ✅ |
-| 6    | `task-06.md`  | 2     | `ai.js`: Ducola (großzügig früh, optimal spät)               | 4, 5         | ✅ |
-| 7    | `task-07.md`  | 2     | `ai.js`: Muisa (zufällig früh, optimal spät)                 | 4, 5         | ✅ |
-| 8    | `task-08.md`  | 3     | `game.js`: Spielzustand, Defaults, Haufengenerierung, `start()` | 2            | ✅ |
-| 9    | `task-09.md`  | 3     | `game.js`: Rendering (Haufen, Steine, Status)                | 8            | ✅ |
-| 10   | `task-10.md`  | 3     | `game.js`: Haufen-Auswahl, Input-Validierung, Button-Enable  | 9            | ✅ |
-| 11   | `task-11.md`  | 3     | `game.js` + `style.css`: Blink-Animation, Stein-Entfernung, Zugsperrung | 10   | ✅ |
-| 12   | `task-12.md`  | 3     | `game.js`: Zugübergabe, Sieg-Erkennung, „Neues Spiel"        | 11           | ✅ |
-| 13   | `task-13.md`  | 3     | `index.html` + `game.js`: Options-Dialog (Zahnrad)           | 2, 8         | ✅ |
-| 14   | `task-14.md`  | 3     | `game.js`: KI-Anschluss (auto-Zug + Denk-Delay)              | 5, 6, 7, 11, 12, 13 | ✅ |
-| 15   | `task-15.md`  | 4     | Veredelung: Barrierefreiheit, Responsive, Fehler-Hygiene     | 9–14         | ✅ |
-| 16   | `task-16.md`  | 4     | Endabnahme E2E (`req §8` + `arch §5`)                        | 1–15         | ✅ |
+| #   | Datei        | Phase | Kurzbeschreibung                                                        | Abhängig von        | Status |
+| --- | ------------ | ----- | ----------------------------------------------------------------------- | ------------------- | ------ |
+| 1   | `task-01.md` | 0     | Projektgerüst: 5 Dateien, Skript-Reihenfolge, läuft per `file://`       | –                   | ✅     |
+| 2   | `task-02.md` | 1     | `nim.js`: Zugregel-Parser (`parseAllowed`, `legalAmount`)               | 1                   | ✅     |
+| 3   | `task-03.md` | 1     | `nim.js`: Grundy-Tabelle via mex                                        | 2                   | ✅     |
+| 4   | `task-04.md` | 1     | `nim.js`: NIM-Summe, Legitimität, optimaler & zufälliger Zug            | 2, 3                | ✅     |
+| 5   | `task-05.md` | 2     | `ai.js`: Baxi (immer optimal)                                           | 4                   | ✅     |
+| 6   | `task-06.md` | 2     | `ai.js`: Ducola (großzügig früh, optimal spät)                          | 4, 5                | ✅     |
+| 7   | `task-07.md` | 2     | `ai.js`: Muisa (zufällig früh, optimal spät)                            | 4, 5                | ✅     |
+| 8   | `task-08.md` | 3     | `game.js`: Spielzustand, Defaults, Haufengenerierung, `start()`         | 2                   | ✅     |
+| 9   | `task-09.md` | 3     | `game.js`: Rendering (Haufen, Steine, Status)                           | 8                   | ✅     |
+| 10  | `task-10.md` | 3     | `game.js`: Haufen-Auswahl, Input-Validierung, Button-Enable             | 9                   | ✅     |
+| 11  | `task-11.md` | 3     | `game.js` + `style.css`: Blink-Animation, Stein-Entfernung, Zugsperrung | 10                  | ✅     |
+| 12  | `task-12.md` | 3     | `game.js`: Zugübergabe, Sieg-Erkennung, „Neues Spiel"                   | 11                  | ✅     |
+| 13  | `task-13.md` | 3     | `index.html` + `game.js`: Options-Dialog (Zahnrad)                      | 2, 8                | ✅     |
+| 14  | `task-14.md` | 3     | `game.js`: KI-Anschluss (auto-Zug + Denk-Delay)                         | 5, 6, 7, 11, 12, 13 | ✅     |
+| 15  | `task-15.md` | 4     | Veredelung: Barrierefreiheit, Responsive, Fehler-Hygiene                | 9–14                | ✅     |
+| 16  | `task-16.md` | 4     | Endabnahme E2E (`req §8` + `arch §5`)                                   | 1–15                | ✅     |
 
 > **Fortschritt:** 16 / 16 erledigt.
 

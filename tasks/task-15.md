@@ -6,16 +6,19 @@
 > **keine andere Task-Datei** lesen.
 
 ## Lies zuerst
+
 - `architecture.md` → §3.5 (Responsive/Mobile), §3.6 (Barrierefreiheit), §3.7 (Edge-Case-Tabelle), §3.1 (console-Hygiene).
 - `requirements.md` → §7.2 (nur `console.error`), §7.1 (keine Build-Tools, ES2020).
 
 ## Ausgangszustand (Code, den du vorfindest)
+
 - Alle `index.html`, `style.css`, `nim.js`, `ai.js`, `game.js` sind **funktional**
   (Tasks 01–14): Spiel läuft E2E, KI zieht, Options-Dialog funktioniert, Sieg-Overlay.
 - Du **prüfst und vervollständigst** die Punkte unten (neue Funktionen optional,
   Bestehendes anpassen).
 
 ## Ziel
+
 1. **Barrierefreiheit** (Vollzug `arch §3.6`):
    - Alle interaktiven Elemente (Haufen, Input, Button, Zahnrad, Dialog-Buttons,
      Overlay-Button) sind per **Tab** erreichbar (`tabindex="0"` wo nötig).
@@ -40,6 +43,7 @@
      - ungültige „Eigene Liste" → validiert (Task 13).
 
 ## Relevante Vorgaben (Zusammenfassung)
+
 - **Kein** `console.log`/`warn` Spam; nur `console.error` bei echten Fehlern. → `req §7.2`, `arch §3.7`.
 - `aria-live`, `aria-invalid`, Labels, `tabindex`, `aria-disabled` → `arch §3.6`.
 - `@media (max-width: 600px)`: größere Touch-Ziele, Stapel-Layout. → `arch §3.5`.
@@ -47,6 +51,7 @@
 - ES2020, **keine** ES-Module, **keine** Build-Tools. → `req §7.1`.
 
 ## Umsetzungshinweise
+
 - **Nicht** neu bauen — bestehende Komponenten prüfen und gezielt Lücken schließen.
 - `console.*`-Aufrufe: `grep -rn "console.log\|console.warn"` → alle auf
   `console.error` umstellen oder entfernen (nur echte Fehler bleiben).
@@ -55,6 +60,7 @@
   `disabled`-Attribute, wo du Button-States verwaltest.
 
 ## Abnahmekriterien (überprüfbar)
+
 - [ ] **Tab-Order** läuft durch: Haufen → Input → Button → Zahnrad → (Dialog) →
       (Overlay) — ohne „Tab-Traps".
 - [ ] Jeder Input hat ein `for`-Label; Screenreader kann jedes Feld benennen.
@@ -68,6 +74,7 @@
 - [ ] Keine Konsolenfehler im **gesamten** Spielverlauf.
 
 ## Definition of Done
+
 Barrierefreiheit (Labels, `aria-*`, Tastatur), Responsive (Mobile-Layout,
 Touch-Ziele), Fehler-Hygiene (nur `console.error`, try/catch, Edge-Cases) sind
 vollständig — das Spiel ist für die finale Acceptance (Task 16) bereit.

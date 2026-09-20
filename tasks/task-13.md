@@ -6,10 +6,12 @@
 > beschriebenen **Codestand** — **keine andere Task-Datei** lesen.
 
 ## Lies zuerst
+
 - `requirements.md` → §3.1 (Parameter, Defaults, Validierung), §3.2 (Zugregeln + „Eigene Liste"), §5.2 (Options-Dialog), §6.
 - `architecture.md` → §3.3 (Options-Dialog, Validierung, Übernehmen → neues Spiel), §3.6 (Labels, `aria-invalid`), §3.7 (ungültige „Eigene Liste").
 
 ## Ausgangszustand (Code, den du vorfindest)
+
 - `index.html` enthält das Zahnrad (oben rechts) — aktuell noch ohne Funktion;
   der Options-Dialog/Overlay-Struktur fehlt noch bzw. ist leer.
 - `game.js` enthält bereits (aus Task 08–12): `Game.state`, `Game.start()`,
@@ -20,6 +22,7 @@
 ## Ziel
 
 ### `index.html` (Markup ergänzen)
+
 - Options-Dialog: `<dialog>` **oder** `<div class="options" hidden>` mit:
   - **Maximale Haufenzahl** (Zahl ≥ 1, Default `1`).
   - **Zugregel** (Radio: `Klassisch` / `4er-Nimm` / `Eigene Liste`).
@@ -34,6 +37,7 @@
   - Jedes Input-Feld mit `<label for="…">`; alle `tabindex`-erreichbar.
 
 ### `game.js`
+
 1. **Öffnen/Schließen**: Zahnrad-Klick toggelt den Dialog (hidden). „Abbrechen"
    schließt den Dialog, **Spiel läuft unverändert weiter** (keine Änderung).
 2. **`Game.validateOptions()`** → `boolean` (+ setzt Fehlermeldungen):
@@ -54,6 +58,7 @@
    sicherstellen, dass `start()` bei Übernahme aufgerufen wird.
 
 ## Relevante Vorgaben (Zusammenfassung)
+
 - Parameter-Defaults: 1 / `4er` / 20 / 10 / `Mensch` / `Spieler 1` / `Spieler 2`.
   → `req §3.1`.
 - Validierung: `min ≤ max`, `maxHaufen ≥ 1`, Zugregel-Liste gültig + `1` in Liste;
@@ -66,6 +71,7 @@
 - `<label for>` auf jedem Input; `aria-invalid` bei Fehler. → `arch §3.3/§3.6`.
 
 ## Umsetzungshinweise
+
 - „Eigene Liste"-Freitextfeld **ausblenden/deaktivieren**, solange eine andere
   Zugregel gewählt ist (sauberes UX-Verhalten).
 - `validateOptions()` liest die **aktuellen** Feldwerte (nicht `Game.state`) —
@@ -75,6 +81,7 @@
   Event-Listener.
 
 ## Abnahmekriterien (überprüfbar – Sichtprüfung)
+
 - [ ] Zahnrad öffnet/schließt den Dialog; alle Felder + Defaults sind korrekt
       vorbefüllt.
 - [ ] „Abbrechen" schließt den Dialog; **Haufen/Spiel ändern sich nicht**.
@@ -89,6 +96,8 @@
 - [ ] Keine Konsolenfehler.
 
 ## Definition of Done
+
 Der Options-Dialog öffnet/schließt, validiert alle Parameter (inkl. „Eigene Liste"
-+ KI-Namen-Vorbelegung), sperrt „Übernehmen" bei ungültigen Werten und startet bei
-Übernahme ein neues Spiel mit den neuen Werten.
+
+- KI-Namen-Vorbelegung), sperrt „Übernehmen" bei ungültigen Werten und startet bei
+  Übernahme ein neues Spiel mit den neuen Werten.

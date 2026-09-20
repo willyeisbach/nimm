@@ -1,8 +1,8 @@
 # NIM – Anforderungen (Requirements)
 
 Browserbasiertes NIM-Spiel für **zwei Spieler**, die abwechselnd ziehen. Diese
-Datei ist der **Problemraum**: Sie beschreibt *was* das Spiel leisten soll, nicht
-*wie* es umgesetzt wird. Laufzeit ist der **Browser**; es gibt kein Backend und
+Datei ist der **Problemraum**: Sie beschreibt _was_ das Spiel leisten soll, nicht
+_wie_ es umgesetzt wird. Laufzeit ist der **Browser**; es gibt kein Backend und
 keinen Build-Schritt. Die Randbedingungen für lokale Ausführung und
 Plattformunabhängigkeit sind in **Abschnitt 7** festgelegt; die konkrete technische
 Umsetzung wird in **`architecture.md`** beschlossen.
@@ -40,17 +40,18 @@ ein neues Spiel** mit den neuen Werten.
 
 ### 3.1 Parameterübersicht
 
-| Parameter                  | Eingabe   | Default     | Erläuterung                                            |
-| -------------------------- | --------- | ----------- | ------------------------------------------------------ |
-| Maximale Haufenzahl        | Zahl ≥ 1  | `1`         | Obergrenze für die Anzahl der Haufen                   |
-| Zugregel                   | Auswahl   | `4er-Nimm`  | klassisch / 4er-Nimm / eigene Liste (s. 3.2)           |
-| Maximale Steine pro Haufen | Zahl ≥ 1  | `20`        | Obergrenze der Größe eines einzelnen Haufens           |
-| Minimale Steine pro Haufen | Zahl ≥ 0  | `10`        | Untergrenze der Größe eines einzelnen Haufens          |
-| Gegner (Spieler 2)         | Radio     | `Mensch`    | `Mensch` / `Baxi` / `Ducola` / `Muisa`                 |
-| Name Spieler 1             | Text      | `Spieler 1` | Anzeigename (menschlicher Spieler 1)                   |
-| Name Spieler 2             | Text      | `Spieler 2` | Anzeigename (wird bei KI-Wahl mit KI-Namen vorbelegt)  |
+| Parameter                  | Eingabe  | Default     | Erläuterung                                           |
+| -------------------------- | -------- | ----------- | ----------------------------------------------------- |
+| Maximale Haufenzahl        | Zahl ≥ 1 | `1`         | Obergrenze für die Anzahl der Haufen                  |
+| Zugregel                   | Auswahl  | `4er-Nimm`  | klassisch / 4er-Nimm / eigene Liste (s. 3.2)          |
+| Maximale Steine pro Haufen | Zahl ≥ 1 | `20`        | Obergrenze der Größe eines einzelnen Haufens          |
+| Minimale Steine pro Haufen | Zahl ≥ 0 | `10`        | Untergrenze der Größe eines einzelnen Haufens         |
+| Gegner (Spieler 2)         | Radio    | `Mensch`    | `Mensch` / `Baxi` / `Ducola` / `Muisa`                |
+| Name Spieler 1             | Text     | `Spieler 1` | Anzeigename (menschlicher Spieler 1)                  |
+| Name Spieler 2             | Text     | `Spieler 2` | Anzeigename (wird bei KI-Wahl mit KI-Namen vorbelegt) |
 
 **Allgemeine Validierung der Parameter:**
+
 - `minSteine ≤ maxSteine`.
 - `minSteine ≥ 0`, `maxHaufen ≥ 1`.
 - Bei Wahl einer KI wird das Name-Feld von Spieler 2 mit dem KI-Namen
@@ -68,12 +69,14 @@ Drei Modi (Radio-Auswahl im Options-Dialog):
    z. B. `1,3,5` oder `2,4,7`.
 
 **Validierung „Eigene Liste":**
+
 - Alle Einträge müssen **positive Ganzzahlen** (`≥ 1`) sein.
 - **`1` muss enthalten sein** (sonst ist der Zug auf leere Haufen/Ende blockiert).
 - Duplikate werden entfernt, die Liste wird **aufsteigend sortiert**.
 - Bei ungültiger Eingabe: Fehlermeldung im Feld, Änderung **wird nicht übernommen**.
 
 **Folge für die Grundy-Werte** (für die KI, s. Abschnitt 4.1):
+
 - Klassisch: `g(n) = n`.
 - 4er-Nimm (`{1,2,3,4}`): `g(n) = n mod 5`.
 - Eigene Liste: `g(n)` via mex-Rekursion (s. 4.1).
@@ -82,7 +85,7 @@ Drei Modi (Radio-Auswahl im Options-Dialog):
 
 - **Anzahl der Haufen** = Zufallszahl in `[1, maxHaufen]`.
 - **Größe jedes Haufens** = unabhängige Zufallszahl in `[minSteine, maxSteine]`.
-- *(Annahme – siehe Abschnitt 9, offene Frage Q1.)*
+- _(Annahme – siehe Abschnitt 9, offene Frage Q1.)_
 
 ---
 
@@ -98,12 +101,13 @@ Stellung** (vor dem eigenen Zug).
 - Erlaubte Nehm-Mengen `A` (sortiert, enthält stets `1`).
 - Grundy-Wert eines Haufens der Größe `n`:
   - `g(0) = 0`
-  - `g(n) = mex{ g(n − a) : a ∈ A und a ≤ n }`  (mex = kleinste nicht vorhandene Zahl)
+  - `g(n) = mex{ g(n − a) : a ∈ A und a ≤ n }` (mex = kleinste nicht vorhandene Zahl)
   - → Tabelle `g[0 … maxSteine]` wird vorab einmal berechnet.
 - **NIM-Summe** der Stellung `P = (n_1 … n_p)`: `N = g(n_1) XOR g(n_2) XOR … XOR g(n_p)`.
 - Die Stellung ist **gewinnbar** für den am Zug stehenden Spieler **genau dann, wenn `N ≠ 0`**.
 
 **Optimaler Zug (wenn `N ≠ 0`):**
+
 - Für jeden Haufen `i` berechne `target_i = N XOR g(n_i)`.
 - Wähle einen Haufen `i` und eine Menge `a ∈ A` mit `a ≤ n_i` und
   `g(n_i − a) = target_i`. (Nach dem NIM-Strategie-Theorem existiert mindestens ein
@@ -158,10 +162,10 @@ Heuristik zurück (bei Baxi: s. 4.2).
   (Name, Haufen, Anzahl). Z. B. `Baxi hat 3 aus Haufen 2 genommen`.
   (Vor dem ersten Zug: kein Eintrag / „–".)
 - **Aktuelle Zugregel auf dem Spielfeld (Issue #2):** Eine dauerhafte, gut
-  lesbare Zeile zeigt die *aktuelle* Regel in Kindersprache und passt sich
+  lesbare Zeile zeigt die _aktuelle_ Regel in Kindersprache und passt sich
   automatisch an, wenn per Optionen eine andere Regel übernommen wird:
-  - Klassisch: „Nimm so viele Rosinen, wie du willst — aber nur aus *einem* Haufen."
-  - 4er-Nimm: „Nimm 1, 2, 3 oder 4 Rosinen — aber nur aus *einem* Haufen."
+  - Klassisch: „Nimm so viele Rosinen, wie du willst — aber nur aus _einem_ Haufen."
+  - 4er-Nimm: „Nimm 1, 2, 3 oder 4 Rosinen — aber nur aus _einem_ Haufen."
   - Eigene Liste: dieselben Zahlen der Liste (z. B. „Nimm 1, 3 oder 5 Rosinen …").
   - Gewinnregel bleibt sichtbar: „Wer die letzte nimmt, gewinnt."
   - Funktioniert ohne Start-Overlay; im Overlay ist sie zusätzlich erlaubt.
@@ -207,6 +211,7 @@ Heuristik zurück (bei Baxi: s. 4.2).
 Ein Tipp oder Ziehen-Loslassen setzt `pendingAmount` (die vom Tipppunkt
 abgeleitete, gesnappte Menge) und rührt `executeMove` aus.
 Die Menge ist **gültig** (Zug läuft), wenn **alle** Bedingungen gelten:
+
 - Menge ist eine **positive Ganzzahl** (`≥ 1`).
 - Menge ist in der **erlaubten Menge** der aktuellen Zugregel enthalten
   (Klassisch: `≤ Haufengröße`; 4er-Nimm/Eigene Liste: Wert ∈ `A`).
@@ -216,14 +221,16 @@ Gesnappte/geklemmte Werte sind legal und führen den Zug aus.
 Ungültige oder gesperrte Werte führen **keinen** Zug aus und melden sich
 **am betroffenen Haufen**: das Haufen-Element schüttelt kurz und zeigt eine
 Blase in Kindersprache an (Issue #8):
+
 - Menge > Haufengröße → „So viele sind nicht da!"
 - Menge nicht in der erlaubten Menge → erlaubte Zahlen nennen, z. B.
   „Nur 1, 3 oder 5 Steine!" bzw. „Nur 1, 2, 3, 4 Steine!"
-Die Blase verschwindet nach ~1,6 s; kein Formular-Fehlerfeld, keine
-Alert-Dialoge, kein klemmender Lock — der nächste legale Zug ist danach
-sofort möglich.
+  Die Blase verschwindet nach ~1,6 s; kein Formular-Fehlerfeld, keine
+  Alert-Dialoge, kein klemmender Lock — der nächste legale Zug ist danach
+  sofort möglich.
 
 ### 5.4 Anzeige letzter Zug
+
 - Siehe 5.1 (Nachvollziehbarkeit, wer was wann genommen hat).
 
 ### 5.5 Animation (Stein-Entfernung)
@@ -263,12 +270,12 @@ sofort möglich.
 
 ## 6. Validierung (Zusammenfassung)
 
-| Stelle            | Regel                                                                      |
-| ----------------- | -------------------------------------------------------------------------- |
-| Options-Parameter | `min ≤ max`, `maxHaufen ≥ 1`, Zugregel-Liste gültig, `1` in Liste          |
-| Zugregel-Liste    | positive Ganzzahlen, `1` enthalten, Duplikate raus, sortiert               |
-| Zug (am Haufen) | `≥ 1`, in erlaubter Menge, `≤` Ziel-Haufen-Größe                        |
-| Tipp/Drag       | legal ⇒ Zug; sonst kein Zug (Snap/Klemmen)                                |
+| Stelle            | Regel                                                             |
+| ----------------- | ----------------------------------------------------------------- |
+| Options-Parameter | `min ≤ max`, `maxHaufen ≥ 1`, Zugregel-Liste gültig, `1` in Liste |
+| Zugregel-Liste    | positive Ganzzahlen, `1` enthalten, Duplikate raus, sortiert      |
+| Zug (am Haufen)   | `≥ 1`, in erlaubter Menge, `≤` Ziel-Haufen-Größe                  |
+| Tipp/Drag         | legal ⇒ Zug; sonst kein Zug (Snap/Klemmen)                        |
 
 ---
 
@@ -288,7 +295,7 @@ Umsetzungsentscheidung, die ihr widerspricht:
   müssen.
 - **Kein Build-/Installations-Schritt:** Die ausgelieferten Dateien werden
   unverändert ausgeliefert und direkt im Browser geöffnet (per
-  Datei-Link bzw. Doppelklick). Ein Webserver ist ausdrücklich *nicht*
+  Datei-Link bzw. Doppelklick). Ein Webserver ist ausdrücklich _nicht_
   erforderlich.
 
 Die konkrete technische Umsetzung dieser Randbedingung (gewähltes
@@ -323,6 +330,7 @@ Technologie-Spektrum, Datei-Organisation, Kompatibilitätsregeln) ist in
 ## 9. Annahmen & offene Fragen
 
 **Bestätigte Entscheidungen:**
+
 - **Haufenzahl:** zufällig in `[1, maxHaufen]`.
 - **KI-Schwellen** (Ducola >10, Muisa >5) beziehen sich auf die **Gesamtsteinanzahl**
   (Summe aller Haufen) in der aktuellen Stellung.
@@ -355,7 +363,7 @@ wie ein Spiel anfühlen, nicht wie ein Formular.
   - **ist wütend/genervt**, wenn sie selbst in einer Verliererposition steht
     und NICHT mehr gewinnen kann,
   - **feiert/ist sauer** beim Spielende je nach Ausgang.
-  Gesichter werden DOM-seitig gesetzt (kein Grundy-Jargon, Kindersprache).
+    Gesichter werden DOM-seitig gesetzt (kein Grundy-Jargon, Kindersprache).
 - **Rückgängig-Button:** Aktivierbar im Options-Dialog (Checkbox, Default
   aus). Setzt den letzten Menschenzug (im KI-Modus plus die KI-Antwort)
   zurück.

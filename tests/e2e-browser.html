@@ -1,37 +1,107 @@
 <!doctype html>
 <html lang="de">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NIMM! Browser-E2E</title>
-  <style>
-    :root { color-scheme: light; font-family: system-ui, sans-serif; }
-    body { max-width: 62rem; margin: 0 auto; padding: 1.5rem; color: #24324a; background: #f7f4ed; }
-    h1 { margin-top: 0; }
-    .intro { padding: 0.8rem 1rem; background: #fff; border-left: 4px solid #3f7fd1; }
-    #overall { padding: 0.8rem 1rem; font-weight: 800; border-radius: 0.5rem; }
-    #overall.running { background: #fff3cd; }
-    #overall.pass { background: #d8f3dc; color: #155724; }
-    #overall.fail { background: #f8d7da; color: #721c24; }
-    #results { display: grid; gap: 0.5rem; padding: 0; list-style: none; }
-    #results li { padding: 0.65rem 0.8rem; background: #fff; border-radius: 0.4rem; }
-    #results li.pass { border-left: 4px solid #2f9e44; }
-    #results li.fail { border-left: 4px solid #c92a2a; }
-    .status { font-weight: 800; margin-right: 0.5rem; }
-    .pass .status { color: #2f9e44; }
-    .fail .status { color: #c92a2a; }
-    #summary { white-space: pre-wrap; background: #1e2633; color: #f1f3f5; padding: 1rem; border-radius: 0.5rem; min-height: 4rem; }
-    .e2e-case-frame { position: absolute; width: 1px; height: 1px; border: 0; opacity: 0; pointer-events: none; }
-    code { background: #eee8dc; padding: 0.1rem 0.25rem; }
-  </style>
-</head>
-<body>
-  <h1>NIMM! – Browser-E2E-Suite</h1>
-  <p class="intro">Dependency-freier Lauf über <code>file://</code>. Jede Prüfung lädt die echte <code>index.html</code> in einem frischen Iframe; es werden keine Spielmodule isoliert gemockt.</p>
-  <div id="overall" class="running" role="status" aria-live="polite">Läuft …</div>
-  <ol id="results" aria-label="Szenario-Ergebnisse"></ol>
-  <h2>Zusammenfassung</h2>
-  <pre id="summary">Noch keine Ergebnisse.</pre>
-  <script src="e2e-browser.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NIMM! Browser-E2E</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: system-ui, sans-serif;
+      }
+      body {
+        max-width: 62rem;
+        margin: 0 auto;
+        padding: 1.5rem;
+        color: #24324a;
+        background: #f7f4ed;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      .intro {
+        padding: 0.8rem 1rem;
+        background: #fff;
+        border-left: 4px solid #3f7fd1;
+      }
+      #overall {
+        padding: 0.8rem 1rem;
+        font-weight: 800;
+        border-radius: 0.5rem;
+      }
+      #overall.running {
+        background: #fff3cd;
+      }
+      #overall.pass {
+        background: #d8f3dc;
+        color: #155724;
+      }
+      #overall.fail {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      #results {
+        display: grid;
+        gap: 0.5rem;
+        padding: 0;
+        list-style: none;
+      }
+      #results li {
+        padding: 0.65rem 0.8rem;
+        background: #fff;
+        border-radius: 0.4rem;
+      }
+      #results li.pass {
+        border-left: 4px solid #2f9e44;
+      }
+      #results li.fail {
+        border-left: 4px solid #c92a2a;
+      }
+      .status {
+        font-weight: 800;
+        margin-right: 0.5rem;
+      }
+      .pass .status {
+        color: #2f9e44;
+      }
+      .fail .status {
+        color: #c92a2a;
+      }
+      #summary {
+        white-space: pre-wrap;
+        background: #1e2633;
+        color: #f1f3f5;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        min-height: 4rem;
+      }
+      .e2e-case-frame {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        border: 0;
+        opacity: 0;
+        pointer-events: none;
+      }
+      code {
+        background: #eee8dc;
+        padding: 0.1rem 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>NIMM! – Browser-E2E-Suite</h1>
+    <p class="intro">
+      Dependency-freier Lauf über <code>file://</code>. Jede Prüfung lädt die
+      echte <code>index.html</code> in einem frischen Iframe; es werden keine
+      Spielmodule isoliert gemockt.
+    </p>
+    <div id="overall" class="running" role="status" aria-live="polite">
+      Läuft …
+    </div>
+    <ol id="results" aria-label="Szenario-Ergebnisse"></ol>
+    <h2>Zusammenfassung</h2>
+    <pre id="summary">Noch keine Ergebnisse.</pre>
+    <script src="e2e-browser.js"></script>
+  </body>
 </html>

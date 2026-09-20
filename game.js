@@ -7,36 +7,40 @@ window.Game = window.Game || {};
 
   // --- Sprachmaterial für die Charaktere (nur für Kinder, kein Grundy-Gebrausch) ---
   const AI_IDLE_FACES = { Baxi: "😼", Ducola: "😺", Muisa: "😸" };
-  const THINK_LINES = ["Hmm, hmm, hmm…", "Wo nimmst du's wohl zuerst weg? 🤔", "Ich zähle die Rosinen…"];
+  const THINK_LINES = [
+    "Hmm, hmm, hmm…",
+    "Wo nimmst du's wohl zuerst weg? 🤔",
+    "Ich zähle die Rosinen…",
+  ];
   const AI_LAUGH_LINES = [
     "Hahaha! Aha, da machst du mal einen Fehler! 😆",
     "Oha, oha, oha! So nicht! 🤭",
-    "Du hast mir gerade eine Rosine geschenkt! 🤦"
+    "Du hast mir gerade eine Rosine geschenkt! 🤦",
   ];
   const AI_WIN_LINES = [
     "YESSS! Die Rosinen sind MEINE! 😤",
     "Hab' ich dir gesagt? Ich bin doch gut. 😏",
-    "Nächste Runde wird's dir richtig gezeigt!"
+    "Nächste Runde wird's dir richtig gezeigt!",
   ];
   const AI_ANGRY_LINES = [
     "Uuugh, das stinkt! Ich krieg' das NIEHT! 😠",
     "Hmpf! Du hast doch die ganze Zeit schon gewonnen… äh, ICH!? 🙄",
     "Nicht lustig! Das ist kein Fair-Play! 😤",
-    "Ugh, meine Rosinen! Warum immer ich! 😠"
+    "Ugh, meine Rosinen! Warum immer ich! 😠",
   ];
   const AI_LOSE_LINES = [
     "NEIN!!! Meine Rosinen! 😠",
     "Hmpf! Unfair! Du hast doch gerade verloren… äh, ICH! 😤",
     "Das war kein Spiel! Das war ein Verbrechen! 🙄",
-    "Nicht lustig! Nächstes Mal gewinne ICH – sag's der Schule!"
+    "Nicht lustig! Nächstes Mal gewinne ICH – sag's der Schule!",
   ];
   const HUMAN_WIN_LINES = [
     "YAY! Alle Rosinen sind meins! 🥳",
-    "Ich bin die Rosinen-Königin! 🤴"
+    "Ich bin die Rosinen-Königin! 🤴",
   ];
   const UNDO_HINT_LINES = [
     "Pech gehabt – du darfst jetzt nochmal! 😄",
-    "Zurückgerutscht! Nochmal versuchen! 💪"
+    "Zurückgerutscht! Nochmal versuchen! 💪",
   ];
 
   function randomInList(list) {
@@ -52,7 +56,7 @@ window.Game = window.Game || {};
     if (range <= 0) {
       throw new Error("Game.randomInt: max muss ≥ min sein.");
     }
-    const maxWord = 0xFFFFFFFF;
+    const maxWord = 0xffffffff;
     const limit = maxWord - (maxWord % range);
     const buf = new Uint32Array(1);
     let x;
@@ -76,7 +80,7 @@ window.Game = window.Game || {};
       name1: "Spieler 1",
       name2: "Spieler 2",
       startPlayer: "random", // "random" | "1" | "2"
-      undoEnabled: false
+      undoEnabled: false,
     };
   };
 
@@ -96,17 +100,17 @@ window.Game = window.Game || {};
     undoEnabled: false,
     ownList: undefined, // nur bei rule === "own" gesetzt (Raw-String)
     // Laufzeit-Zustand
-    heaps: [],         // Array der aktuellen Haufengrößen
-    active: 1,         // 1 oder 2 (aktiver Spieler)
-    lastMove: null,    // null oder { player, heapIdx, amount }
-    selectedHeap: 0,   // 0-basiert: ausgewählter Ziel-Haufen
-    allowed: null,     // erlaubte Mengen A (null = klassisch)
+    heaps: [], // Array der aktuellen Haufengrößen
+    active: 1, // 1 oder 2 (aktiver Spieler)
+    lastMove: null, // null oder { player, heapIdx, amount }
+    selectedHeap: 0, // 0-basiert: ausgewählter Ziel-Haufen
+    allowed: null, // erlaubte Mengen A (null = klassisch)
     pendingAmount: null, // Issue #3: vom Haufen zugewiesene Menge, bis executeMove
-    lock: false,       // true während Animation/KI-Zug
+    lock: false, // true während Animation/KI-Zug
     awaitingStart: false, // Issue #1: Runde wartet auf „Los!", bevor der erste Zug laufen darf
-    faces: null,       // {1:"🙂",2:"😼"} – aktuelle Gesichter (null = idle)
-    bubble: {},        // {1/2: Sprechblasen-Text}
-    undoStack: []      // Zug-Stapel für Rückgängig (Snapshots)
+    faces: null, // {1:"🙂",2:"😼"} – aktuelle Gesichter (null = idle)
+    bubble: {}, // {1/2: Sprechblasen-Text}
+    undoStack: [], // Zug-Stapel für Rückgängig (Snapshots)
   };
 
   function firstNonEmptyHeap(heaps) {
@@ -122,7 +126,11 @@ window.Game = window.Game || {};
    * Game.isAI(opponentName) → boolean. Ist der Name ein KI-Charakter?
    */
   Game.isAI = function (opponentName) {
-    return opponentName === "Baxi" || opponentName === "Ducola" || opponentName === "Muisa";
+    return (
+      opponentName === "Baxi" ||
+      opponentName === "Ducola" ||
+      opponentName === "Muisa"
+    );
   };
 
   /**
@@ -145,7 +153,11 @@ window.Game = window.Game || {};
     for (let i = 0; i < count; i++) {
       heaps[i] = randomInt(s.minSteine, s.maxSteine);
     }
-    if (s.minSteine === 0 && s.maxSteine >= 1 && firstNonEmptyHeap(heaps) === -1) {
+    if (
+      s.minSteine === 0 &&
+      s.maxSteine >= 1 &&
+      firstNonEmptyHeap(heaps) === -1
+    ) {
       heaps[0] = 1;
     }
     return heaps;
@@ -157,7 +169,9 @@ window.Game = window.Game || {};
    */
   Game.idleFaces = function () {
     const s = Game.state;
-    const aiFace = Game.isAI(s.opponent) ? (AI_IDLE_FACES[s.opponent] || "😼") : "🙂";
+    const aiFace = Game.isAI(s.opponent)
+      ? AI_IDLE_FACES[s.opponent] || "😼"
+      : "🙂";
     return { 1: "🙂", 2: aiFace };
   };
 
@@ -210,14 +224,17 @@ window.Game = window.Game || {};
     if (allowed && allowed.length) {
       // Listen-Modi (4er / eigene Liste): Zahlen der Liste nennen,
       // kindgerecht mit "oder" vor der letzten (1, 2, 3 ODER 4).
-      const list = allowed.slice().sort(function (a, b) { return a - b; });
+      const list = allowed.slice().sort(function (a, b) {
+        return a - b;
+      });
       let joined;
       if (list.length === 1) {
         joined = String(list[0]);
       } else if (list.length === 2) {
         joined = list[0] + " oder " + list[1];
       } else {
-        joined = list.slice(0, -1).join(", ") + " oder " + list[list.length - 1];
+        joined =
+          list.slice(0, -1).join(", ") + " oder " + list[list.length - 1];
       }
       amountText = joined + " Rosinen";
     } else {
@@ -225,7 +242,9 @@ window.Game = window.Game || {};
       amountText = "so viele Rosinen, wie du willst";
     }
     el.textContent =
-      "Regel: Nimm " + amountText + " — aber nur aus einem Haufen. " +
+      "Regel: Nimm " +
+      amountText +
+      " — aber nur aus einem Haufen. " +
       "Wer die letzte nimmt, gewinnt!";
   };
 
@@ -247,7 +266,7 @@ window.Game = window.Game || {};
       const name = p === 1 ? s.name1 : s.name2;
       // Spieler 2: keine „(KI)"-Markierung mehr; der Name (Charaktername
       // bzw. menschlicher Name) genügt, dazu die kindliche Rolle „Mitspieler".
-      const role = (p === 1) ? "du" : "Mitspieler";
+      const role = p === 1 ? "du" : "Mitspieler";
       card.className = "char-card" + (s.active === p ? " active" : "");
       const faceEl = card.querySelector(".char-face");
       if (faceEl) {
@@ -261,12 +280,14 @@ window.Game = window.Game || {};
       if (roleEl) {
         roleEl.textContent = role;
       }
-      const bubbleEl = card.querySelector ? card.querySelector(".bubble") : null;
+      const bubbleEl = card.querySelector
+        ? card.querySelector(".bubble")
+        : null;
       if (bubbleEl) {
         const text = (s.bubble || {})[p] || "";
         bubbleEl.textContent = text;
-        bubbleEl.className = "bubble" +
-          (text && faces[p] === "😠" ? " bubble-angry" : "");
+        bubbleEl.className =
+          "bubble" + (text && faces[p] === "😠" ? " bubble-angry" : "");
       }
       // Issue #4: „Wer ist dran?" + „letzter Zug" stehen DIREKT AN der
       // Karte (keine erwachsene Statusbox mehr). Die aktive Karte bleibt
@@ -277,14 +298,18 @@ window.Game = window.Game || {};
       // Mensch-gegen-Menspiel an den aktiven Spieler. Bei der AKTIVEN KI
       // bleibt die eigene Sprechblase („…denkt…") das Feedback — „Du bist
       // dran!" wäre für eine Maschine fehl am Platz.
-      const aiCard = (p === 2 && Game.isAI(s.opponent));
+      const aiCard = p === 2 && Game.isAI(s.opponent);
       const turnOn = active && !aiCard && !s.awaitingStart;
       // „Du bist dran!" — an der aktiven Karte, solange die Runde läuft.
       {
-        let turnEl = card.querySelector ? card.querySelector(".char-turn") : null;
+        let turnEl = card.querySelector
+          ? card.querySelector(".char-turn")
+          : null;
         if (!turnEl) {
-          turnEl = (typeof document !== "undefined" && document.createElement)
-            ? document.createElement("p") : null;
+          turnEl =
+            typeof document !== "undefined" && document.createElement
+              ? document.createElement("p")
+              : null;
           if (turnEl) {
             turnEl.className = "char-turn";
             card.appendChild(turnEl);
@@ -299,10 +324,14 @@ window.Game = window.Game || {};
       }
       // „letzter Zug" — an der ziehenden Karte, kindgerecht, ohne „–"-Zeile.
       {
-        let lastEl = card.querySelector ? card.querySelector(".char-lastmove") : null;
+        let lastEl = card.querySelector
+          ? card.querySelector(".char-lastmove")
+          : null;
         if (!lastEl) {
-          lastEl = (typeof document !== "undefined" && document.createElement)
-            ? document.createElement("p") : null;
+          lastEl =
+            typeof document !== "undefined" && document.createElement
+              ? document.createElement("p")
+              : null;
           if (lastEl) {
             lastEl.className = "char-lastmove";
             card.appendChild(lastEl);
@@ -311,13 +340,23 @@ window.Game = window.Game || {};
         if (lastEl) {
           const lm = s.lastMove;
           if (lm && lm.player === p) {
-            lastEl.textContent = name + " hat " + lm.amount +
-              " Rosine" + (lm.amount === 1 ? "" : "n") +
-              " von Haufen " + (lm.heapIdx + 1) + " genommen.";
-            if (lastEl.hidden !== undefined) { lastEl.hidden = false; }
+            lastEl.textContent =
+              name +
+              " hat " +
+              lm.amount +
+              " Rosine" +
+              (lm.amount === 1 ? "" : "n") +
+              " von Haufen " +
+              (lm.heapIdx + 1) +
+              " genommen.";
+            if (lastEl.hidden !== undefined) {
+              lastEl.hidden = false;
+            }
           } else {
             lastEl.textContent = "";
-            if (lastEl.hidden !== undefined) { lastEl.hidden = true; }
+            if (lastEl.hidden !== undefined) {
+              lastEl.hidden = true;
+            }
           }
         }
       }
@@ -360,7 +399,8 @@ window.Game = window.Game || {};
     if (s.active === 1) {
       s.bubble[1] = "Wer nimmt die letzte Rosine? 😋";
     } else if (Game.isAI(s.opponent)) {
-      s.bubble[2] = "Ich fange an – halt dich fest! " + (AI_IDLE_FACES[s.opponent] || "😼");
+      s.bubble[2] =
+        "Ich fange an – halt dich fest! " + (AI_IDLE_FACES[s.opponent] || "😼");
     } else {
       s.bubble[2] = "Ich bin bereit! 😊";
     }
@@ -392,10 +432,11 @@ window.Game = window.Game || {};
       return;
     }
     const s = Game.state;
-    const q = (function (name) {
-      return (el.querySelector && typeof el.querySelector === "function")
-        ? el.querySelector(name) : null;
-    });
+    const q = function (name) {
+      return el.querySelector && typeof el.querySelector === "function"
+        ? el.querySelector(name)
+        : null;
+    };
     if (!s.awaitingStart) {
       el.hidden = true;
       return;
@@ -418,7 +459,7 @@ window.Game = window.Game || {};
       // KI-Gegner: Name ist der Charakternamen (Baxi/Ducola/Muisa) und zählt
       // als gesetzt (Issue #6, AK3) — wird vorbereitet, nicht überschrieben.
       if (name2) {
-        name2.value = Game.isAI(s.opponent) ? s.opponent : (s.name2 || "");
+        name2.value = Game.isAI(s.opponent) ? s.opponent : s.name2 || "";
       }
       if (name1) {
         name1.value = s.name1 || "";
@@ -427,13 +468,15 @@ window.Game = window.Game || {};
 
     const whoEl = q("#start-who");
     if (whoEl) {
-      const starter = (s.active === 1) ? s.name1 : s.name2;
+      const starter = s.active === 1 ? s.name1 : s.name2;
       whoEl.textContent = starter + " beginnt!";
     }
     // Startende Karte deutlich hervorheben (AK: wer beginnt).
     for (let p = 1; p <= 2; p++) {
-      const card = (typeof document.querySelector === "function")
-        ? document.querySelector("#char-" + p) : null;
+      const card =
+        typeof document.querySelector === "function"
+          ? document.querySelector("#char-" + p)
+          : null;
       if (card && card.classList && card.classList.toggle) {
         card.classList.toggle("starting", s.awaitingStart && s.active === p);
       }
@@ -454,10 +497,11 @@ window.Game = window.Game || {};
     // Issue #6: Anzeigennamen bestätigen (leeres Feld = bisheriger Name bleibt).
     // Nur relevant, solange noch ein Platzhalter-Name im Spiel steckt.
     const el = document.querySelector("#start-overlay");
-    const q = (function (name) {
-      return (el && el.querySelector && typeof el.querySelector === "function")
-        ? el.querySelector(name) : null;
-    });
+    const q = function (name) {
+      return el && el.querySelector && typeof el.querySelector === "function"
+        ? el.querySelector(name)
+        : null;
+    };
     if ((s.name1 || "") === "Spieler 1" || (s.name2 || "") === "Spieler 2") {
       const n1 = q("#start-name1");
       const n2 = q("#start-name2");
@@ -489,7 +533,11 @@ window.Game = window.Game || {};
    */
   Game.maxAllowable = function (heapIdx) {
     const s = Game.state;
-    if (typeof heapIdx !== "number" || heapIdx < 0 || heapIdx >= s.heaps.length) {
+    if (
+      typeof heapIdx !== "number" ||
+      heapIdx < 0 ||
+      heapIdx >= s.heaps.length
+    ) {
       return 0;
     }
     const size = s.heaps[heapIdx];
@@ -553,10 +601,19 @@ window.Game = window.Game || {};
     });
   };
 
-
   // --- Issue #7: KI zählt die genommenen Rosinen laut in der Sprechblase mit ---
-  const COUNT_WORDS = ["Eins", "Zwei", "Drei", "Vier", "Fünf", "Sechs",
-    "Sieben", "Acht", "Neun", "Zehn"];
+  const COUNT_WORDS = [
+    "Eins",
+    "Zwei",
+    "Drei",
+    "Vier",
+    "Fünf",
+    "Sechs",
+    "Sieben",
+    "Acht",
+    "Neun",
+    "Zehn",
+  ];
   const BLINK_TOTAL = 1200; // 2 × 0,6 s (style.css: .stone.blinking) — Timing-Basis
 
   /**
@@ -574,7 +631,8 @@ window.Game = window.Game || {};
       return; // menschlicher Zug → kein Mitzählen (AK3)
     }
     const n = Math.max(1, Math.floor(amount) || 1);
-    const reducedMotion = typeof window.matchMedia === "function" &&
+    const reducedMotion =
+      typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reducedMotion) {
       // Keine schrittweise Animation: einmal das korrekte Zählwort nennen.
@@ -607,7 +665,11 @@ window.Game = window.Game || {};
       t = setTimeout(tick, stepMs);
     }, stepMs);
     // Kein Leak: Timer nicht länger halten, als die Animation läuft.
-    setTimeout(function () { if (t) { clearTimeout(t); } }, BLINK_TOTAL + 200);
+    setTimeout(function () {
+      if (t) {
+        clearTimeout(t);
+      }
+    }, BLINK_TOTAL + 200);
   };
 
   /**
@@ -618,18 +680,22 @@ window.Game = window.Game || {};
     const s = Game.state;
     const heapSize = s.heaps[heapIdx];
     if (heapSize == null || amount == null || amount < 1 || amount > heapSize) {
-      if (typeof cb === "function") { cb(); }
+      if (typeof cb === "function") {
+        cb();
+      }
       return;
     }
 
     s.lock = true;
 
     const heapEl = document.querySelector(
-      '#heaps .heap[data-heap-index="' + heapIdx + '"]'
+      '#heaps .heap[data-heap-index="' + heapIdx + '"]',
     );
     if (!heapEl) {
       s.lock = false;
-      if (typeof cb === "function") { cb(); }
+      if (typeof cb === "function") {
+        cb();
+      }
       return;
     }
     const stones = heapEl.querySelectorAll(".stone");
@@ -646,27 +712,37 @@ window.Game = window.Game || {};
     let done = false;
     const seq = Game._moveSeq;
     function finalize() {
-      if (done) { return; }
+      if (done) {
+        return;
+      }
       done = true;
       if (seq === Game._moveSeq && Game._animTimer !== undefined) {
         clearTimeout(Game._animTimer);
         Game._animTimer = undefined;
       }
-      if (seq !== Game._moveSeq) { return; }
+      if (seq !== Game._moveSeq) {
+        return;
+      }
 
-      targets.forEach(function (el) { el.remove(); });
-      heapEl.querySelectorAll(".stone.blinking")
-        .forEach(function (el) { el.classList.remove("blinking"); });
+      targets.forEach(function (el) {
+        el.remove();
+      });
+      heapEl.querySelectorAll(".stone.blinking").forEach(function (el) {
+        el.classList.remove("blinking");
+      });
 
       s.heaps[heapIdx] = s.heaps[heapIdx] - amount;
 
       s.lock = false;
 
       Game.render();
-      if (typeof cb === "function") { cb(); }
+      if (typeof cb === "function") {
+        cb();
+      }
     }
 
-    const reducedMotion = typeof window.matchMedia === "function" &&
+    const reducedMotion =
+      typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reducedMotion) {
       finalize();
@@ -691,8 +767,14 @@ window.Game = window.Game || {};
     s.undoStack.push({
       heaps: s.heaps.slice(),
       active: s.active,
-      lastMove: s.lastMove ? { player: s.lastMove.player, heapIdx: s.lastMove.heapIdx, amount: s.lastMove.amount } : null,
-      selectedHeap: s.selectedHeap
+      lastMove: s.lastMove
+        ? {
+            player: s.lastMove.player,
+            heapIdx: s.lastMove.heapIdx,
+            amount: s.lastMove.amount,
+          }
+        : null,
+      selectedHeap: s.selectedHeap,
     });
     if (s.undoStack.length > 200) {
       s.undoStack.shift();
@@ -710,8 +792,16 @@ window.Game = window.Game || {};
     }
     const s = Game.state;
     const amount = s.pendingAmount;
-    if (s.selectedHeap < 0 || s.selectedHeap >= s.heaps.length ||
-        !window.Nim.legalAmount(s.rule, s.allowed, amount, s.heaps[s.selectedHeap])) {
+    if (
+      s.selectedHeap < 0 ||
+      s.selectedHeap >= s.heaps.length ||
+      !window.Nim.legalAmount(
+        s.rule,
+        s.allowed,
+        amount,
+        s.heaps[s.selectedHeap],
+      )
+    ) {
       return;
     }
 
@@ -721,7 +811,7 @@ window.Game = window.Game || {};
     Game.pushHistory();
     Game.animateAndRemove(heapIdx, amount, function () {
       s.lastMove = { player: s.active, heapIdx: heapIdx, amount: amount };
-      s.active = (s.active === 1) ? 2 : 1;
+      s.active = s.active === 1 ? 2 : 1;
 
       s.selectedHeap = -1;
       s.pendingAmount = null;
@@ -748,7 +838,11 @@ window.Game = window.Game || {};
       return; // Issue #1: vor „Los!" läuft kein Zug
     }
     const s = Game.state;
-    if (typeof heapIdx !== "number" || heapIdx < 0 || heapIdx >= s.heaps.length) {
+    if (
+      typeof heapIdx !== "number" ||
+      heapIdx < 0 ||
+      heapIdx >= s.heaps.length
+    ) {
       return;
     }
     const size = s.heaps[heapIdx];
@@ -769,8 +863,12 @@ window.Game = window.Game || {};
     if (s.allowed && s.allowed.length) {
       if (s.allowed.indexOf(n) === -1) {
         const options = s.allowed
-          .filter(function (a) { return a <= size; })
-          .sort(function (a, b) { return a - b; });
+          .filter(function (a) {
+            return a <= size;
+          })
+          .sort(function (a, b) {
+            return a - b;
+          });
         if (!options.length) {
           Game.raiseHeapFeedback(heapIdx, "So viele sind nicht da!");
           return;
@@ -778,7 +876,10 @@ window.Game = window.Game || {};
         const listText = options.join(", ");
         Game.raiseHeapFeedback(
           heapIdx,
-          "Nur " + listText + " " + (options.length === 1 ? "Stein!" : "Steine!")
+          "Nur " +
+            listText +
+            " " +
+            (options.length === 1 ? "Stein!" : "Steine!"),
         );
         return;
       }
@@ -798,7 +899,7 @@ window.Game = window.Game || {};
    */
   Game.raiseHeapFeedback = function (heapIdx, text) {
     const heapEl = document.querySelector(
-      '#heaps .heap[data-heap-index="' + heapIdx + '"]'
+      '#heaps .heap[data-heap-index="' + heapIdx + '"]',
     );
     if (!heapEl) {
       return;
@@ -818,9 +919,10 @@ window.Game = window.Game || {};
     void heapEl.offsetWidth; // Re-Flow, damit die Animation neu läuft
     heapEl.classList.add("heap--shake");
 
-    const note = (typeof document !== "undefined" && document.createElement)
-      ? document.createElement("span")
-      : { className: "", textContent: "" };
+    const note =
+      typeof document !== "undefined" && document.createElement
+        ? document.createElement("span")
+        : { className: "", textContent: "" };
     note.className = "heap-feedback";
     note.textContent = text;
     if (typeof heapEl.appendChild === "function") {
@@ -832,7 +934,11 @@ window.Game = window.Game || {};
       if (typeof note.remove === "function") {
         note.remove();
       } else if (typeof heapEl.removeChild === "function" && heapEl.children) {
-        try { heapEl.removeChild(note); } catch (e) { /* Mock-DOM */ }
+        try {
+          heapEl.removeChild(note);
+        } catch (e) {
+          /* Mock-DOM */
+        }
       }
       heapEl._feedbackTimer = undefined;
     }, 1600);
@@ -852,7 +958,7 @@ window.Game = window.Game || {};
       return;
     }
     const winnerPlayer = s.lastMove ? s.lastMove.player : s.active;
-    const winnerName = (winnerPlayer === 1) ? s.name1 : s.name2;
+    const winnerName = winnerPlayer === 1 ? s.name1 : s.name2;
     Game.onGameEnd(winnerPlayer);
     Game.showWinOverlay(winnerName);
     Game.renderUndoButton();
@@ -962,18 +1068,28 @@ window.Game = window.Game || {};
     if (!layer) {
       return;
     }
-    const colors = ["#f5b301", "#e85d04", "#2f9e44", "#3f7fd1", "#d6336c", "#845ef7"];
+    const colors = [
+      "#f5b301",
+      "#e85d04",
+      "#2f9e44",
+      "#3f7fd1",
+      "#d6336c",
+      "#845ef7",
+    ];
     for (let i = 0; i < 60; i++) {
       const piece = document.createElement("div");
       piece.className = "confetti";
-      piece.style.left = (Math.random() * 100) + "vw";
+      piece.style.left = Math.random() * 100 + "vw";
       piece.style.background = colors[i % colors.length];
-      piece.style.animationDelay = (Math.random() * 0.8) + "s";
-      piece.style.animationDuration = (2 + Math.random() * 2) + "s";
-      piece.style.transform = "rotate(" + Math.floor(Math.random() * 360) + "deg)";
+      piece.style.animationDelay = Math.random() * 0.8 + "s";
+      piece.style.animationDuration = 2 + Math.random() * 2 + "s";
+      piece.style.transform =
+        "rotate(" + Math.floor(Math.random() * 360) + "deg)";
       layer.appendChild(piece);
       (function (el) {
-        setTimeout(function () { el.remove(); }, 5200);
+        setTimeout(function () {
+          el.remove();
+        }, 5200);
       })(piece);
     }
   };
@@ -1096,7 +1212,12 @@ window.Game = window.Game || {};
    * Game.clearOptionErrors() → void
    */
   Game.clearOptionErrors = function () {
-    ["opt-max-heaps", "opt-own-list", "opt-max-stones", "opt-min-stones"].forEach(function (id) {
+    [
+      "opt-max-heaps",
+      "opt-own-list",
+      "opt-max-stones",
+      "opt-min-stones",
+    ].forEach(function (id) {
       const el = document.querySelector("#" + id);
       if (el) {
         el.removeAttribute("aria-invalid");
@@ -1182,7 +1303,7 @@ window.Game = window.Game || {};
     set("opt-name2", s.name2);
 
     const ruleEl = document.querySelector(
-      'input[name="opt-rule"][value="' + s.rule + '"]'
+      'input[name="opt-rule"][value="' + s.rule + '"]',
     );
     if (ruleEl) {
       ruleEl.checked = true;
@@ -1191,18 +1312,18 @@ window.Game = window.Game || {};
 
     const ownInput = document.querySelector("#opt-own-list");
     if (ownInput) {
-      ownInput.value = (s.rule === "own" && s.ownList) ? s.ownList : "";
+      ownInput.value = s.rule === "own" && s.ownList ? s.ownList : "";
     }
 
     const oppEl = document.querySelector(
-      'input[name="opt-opponent"][value="' + s.opponent + '"]'
+      'input[name="opt-opponent"][value="' + s.opponent + '"]',
     );
     if (oppEl) {
       oppEl.checked = true;
     }
 
     const startEl = document.querySelector(
-      'input[name="opt-start"][value="' + s.startPlayer + '"]'
+      'input[name="opt-start"][value="' + s.startPlayer + '"]',
     );
     if (startEl) {
       startEl.checked = true;
@@ -1225,9 +1346,11 @@ window.Game = window.Game || {};
     try {
       els = Array.prototype.slice.call(dlg.querySelectorAll(":focusable"));
     } catch (e) {
-      els = Array.prototype.slice.call(dlg.querySelectorAll(
-        'button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])'
-      ));
+      els = Array.prototype.slice.call(
+        dlg.querySelectorAll(
+          'button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      );
     }
     return els.filter(function (el) {
       return !el.disabled && el.offsetParent !== null;
@@ -1260,11 +1383,17 @@ window.Game = window.Game || {};
       dlg.hidden = true;
     }
     const target = Game._optionsLastFocused;
-    if (target && typeof target.focus === "function" && document.contains(target)) {
+    if (
+      target &&
+      typeof target.focus === "function" &&
+      document.contains(target)
+    ) {
       target.focus();
     } else {
       const gear = document.querySelector("#options-btn");
-      if (gear) { gear.focus(); }
+      if (gear) {
+        gear.focus();
+      }
     }
     Game._optionsLastFocused = null;
   };
@@ -1311,27 +1440,43 @@ window.Game = window.Game || {};
     const minSteine = Game.readOptionInt("opt-min-stones");
 
     if (maxHaufen === null || maxHaufen < 1) {
-      Game.showOptionError("Maximale Haufenzahl muss mindestens 1 sein.", "opt-max-heaps");
+      Game.showOptionError(
+        "Maximale Haufenzahl muss mindestens 1 sein.",
+        "opt-max-heaps",
+      );
       return false;
     }
     if (maxSteine === null || maxSteine < 1) {
-      Game.showOptionError("Maximale Steine pro Haufen müssen mindestens 1 sein.", "opt-max-stones");
+      Game.showOptionError(
+        "Maximale Steine pro Haufen müssen mindestens 1 sein.",
+        "opt-max-stones",
+      );
       return false;
     }
     if (minSteine === null || minSteine < 0) {
-      Game.showOptionError("Minimale Steine pro Haufen müssen mindestens 0 sein.", "opt-min-stones");
+      Game.showOptionError(
+        "Minimale Steine pro Haufen müssen mindestens 0 sein.",
+        "opt-min-stones",
+      );
       return false;
     }
     if (minSteine > maxSteine) {
-      Game.showOptionError("Minimale Steine dürfen nicht mehr als maximale sein.", "opt-min-stones");
+      Game.showOptionError(
+        "Minimale Steine dürfen nicht mehr als maximale sein.",
+        "opt-min-stones",
+      );
       return false;
     }
 
     const rule = Game.selectedRule();
     if (rule === "own") {
-      const ownList = (document.querySelector("#opt-own-list") || {}).value || "";
+      const ownList =
+        (document.querySelector("#opt-own-list") || {}).value || "";
       if (window.Nim.parseAllowed("own", ownList) === null) {
-        Game.showOptionError("Eigene Liste: positive Ganzzahlen, die Zahl 1 muss enthalten sein.", "opt-own-list");
+        Game.showOptionError(
+          "Eigene Liste: positive Ganzzahlen, die Zahl 1 muss enthalten sein.",
+          "opt-own-list",
+        );
         return false;
       }
     }
@@ -1366,15 +1511,19 @@ window.Game = window.Game || {};
     s.maxSteine = Game.readOptionInt("opt-max-stones");
     s.minSteine = Game.readOptionInt("opt-min-stones");
     s.rule = rule;
-    s.ownList = (rule === "own") ? ((document.querySelector("#opt-own-list") || {}).value || "") : undefined;
+    s.ownList =
+      rule === "own"
+        ? (document.querySelector("#opt-own-list") || {}).value || ""
+        : undefined;
     s.opponent = Game.selectedOpponent();
     s.startPlayer = Game.selectedStart();
-    s.undoEnabled = ((document.querySelector("#opt-undo") || {}).checked) === true;
+    s.undoEnabled =
+      (document.querySelector("#opt-undo") || {}).checked === true;
 
     const name1 = (document.querySelector("#opt-name1") || {}).value;
     const name2 = (document.querySelector("#opt-name2") || {}).value;
-    s.name1 = (name1 && name1.trim()) ? name1.trim() : "Spieler 1";
-    s.name2 = (name2 && name2.trim()) ? name2.trim() : "Spieler 2";
+    s.name1 = name1 && name1.trim() ? name1.trim() : "Spieler 1";
+    s.name2 = name2 && name2.trim() ? name2.trim() : "Spieler 2";
 
     s.allowed = window.Nim.parseAllowed(s.rule, s.ownList);
 
@@ -1429,7 +1578,13 @@ window.Game = window.Game || {};
       // ===== Tipp/Ziehen: Finger/Zeiger auf einen Stein, (optional) über
       // mehrere ziehe, loslassen = Zug. (Issue #3: Tipp = sofortiger Zug.)
       if (typeof window.PointerEvent !== "undefined") {
-        Game.bindDrag(heapsEl, "pointerdown", "pointermove", "pointerup", "pointercancel");
+        Game.bindDrag(
+          heapsEl,
+          "pointerdown",
+          "pointermove",
+          "pointerup",
+          "pointercancel",
+        );
       } else if (typeof window.MouseEvent !== "undefined") {
         Game.bindDrag(heapsEl, "mousedown", "mousemove", "mouseup", null);
       }
@@ -1441,19 +1596,25 @@ window.Game = window.Game || {};
     // Rückgängig-Button.
     const undoBtn = document.querySelector("#undo-btn");
     if (undoBtn) {
-      undoBtn.addEventListener("click", function () { Game.undoMove(); });
+      undoBtn.addEventListener("click", function () {
+        Game.undoMove();
+      });
     }
 
     // „Noch mal!" (neue Runde).
     const newRoundBtn = document.querySelector("#new-round-btn");
     if (newRoundBtn) {
-      newRoundBtn.addEventListener("click", function () { Game.newGame(); });
+      newRoundBtn.addEventListener("click", function () {
+        Game.newGame();
+      });
     }
 
     // „Los!" (Issue #1): bestätigt den Rundenstart, danach darf die KI ziehen.
     const startGoBtn = document.querySelector("#start-go-btn");
     if (startGoBtn) {
-      startGoBtn.addEventListener("click", function () { Game.confirmStart(); });
+      startGoBtn.addEventListener("click", function () {
+        Game.confirmStart();
+      });
     }
 
     // --- Options-Dialog (Task 13) ---
@@ -1512,7 +1673,14 @@ window.Game = window.Game || {};
         if (!t) {
           return;
         }
-        if (["opt-max-heaps", "opt-max-stones", "opt-min-stones", "opt-own-list"].indexOf(t.id) !== -1) {
+        if (
+          [
+            "opt-max-heaps",
+            "opt-max-stones",
+            "opt-min-stones",
+            "opt-own-list",
+          ].indexOf(t.id) !== -1
+        ) {
           Game.validateOptions();
         }
       });
@@ -1555,8 +1723,10 @@ window.Game = window.Game || {};
       if (s.heaps[idx] < 1) {
         return;
       }
-      const stone = (ev.target && typeof ev.target.closest === "function")
-        ? ev.target.closest(".stone") : null;
+      const stone =
+        ev.target && typeof ev.target.closest === "function"
+          ? ev.target.closest(".stone")
+          : null;
       if (!stone) {
         return;
       }
@@ -1588,14 +1758,16 @@ window.Game = window.Game || {};
       // eines Haufens oder über einem anderen Haufen bleibt der laufende Zug
       // gültig und behält seine bisherige Menge.
       const originHeap = document.querySelector(
-        '#heaps .heap[data-heap-index="' + drag.originIdx + '"]'
+        '#heaps .heap[data-heap-index="' + drag.originIdx + '"]',
       );
       const heap = heapFrom(ev);
       if (!heap || heap !== originHeap) {
         return;
       }
-      const stone = (ev.target && typeof ev.target.closest === "function")
-        ? ev.target.closest(".stone") : null;
+      const stone =
+        ev.target && typeof ev.target.closest === "function"
+          ? ev.target.closest(".stone")
+          : null;
       if (stone) {
         const list = heap.querySelectorAll(".stone");
         const pos = Array.prototype.indexOf.call(list, stone);
@@ -1612,8 +1784,8 @@ window.Game = window.Game || {};
       const current = drag;
       drag = null;
       const idx = current.originIdx;
-      const stillOk = idx >= 0 && idx < Game.state.heaps.length &&
-        Game.state.heaps[idx] >= 1;
+      const stillOk =
+        idx >= 0 && idx < Game.state.heaps.length && Game.state.heaps[idx] >= 1;
       if (!stillOk) {
         return;
       }
@@ -1712,8 +1884,10 @@ window.Game = window.Game || {};
         //     → sie lacht höhnisch 😆.
         //   N = 0 → Verliererposition: sie KANN nicht mehr gewinnen
         //     → sie wird wütend und murrt 😠 (Willys Kern-Wunsch).
-        if (typeof window.Nim !== "undefined" &&
-            typeof window.Nim.nimSum === "function") {
+        if (
+          typeof window.Nim !== "undefined" &&
+          typeof window.Nim.nimSum === "function"
+        ) {
           const N = window.Nim.nimSum(s.heaps, s.allowed);
           if (N !== null && N !== undefined) {
             if (N !== 0 && s.lastMove && s.lastMove.player === 1) {
@@ -1730,8 +1904,12 @@ window.Game = window.Game || {};
         const move = window.AI.chooseMove(s.heaps, s.allowed, s.opponent);
 
         Game.animateAndRemove(move.heapIdx, move.amount, function () {
-          s.lastMove = { player: s.active, heapIdx: move.heapIdx, amount: move.amount };
-          s.active = (s.active === 1) ? 2 : 1;
+          s.lastMove = {
+            player: s.active,
+            heapIdx: move.heapIdx,
+            amount: move.amount,
+          };
+          s.active = s.active === 1 ? 2 : 1;
 
           s.selectedHeap = -1;
           if (s.heaps.length === 1) {
@@ -1761,15 +1939,19 @@ window.Game = window.Game || {};
   Game.render = function () {
     const s = Game.state;
 
-    if (s.selectedHeap >= 0 &&
-        s.selectedHeap < s.heaps.length &&
-        s.heaps[s.selectedHeap] < 1) {
+    if (
+      s.selectedHeap >= 0 &&
+      s.selectedHeap < s.heaps.length &&
+      s.heaps[s.selectedHeap] < 1
+    ) {
       s.selectedHeap = firstNonEmptyHeap(s.heaps);
     }
 
     // 0. Characters-Cards anlegen (einmalig), falls noch nicht vorhanden.
-    const charWrap = (typeof document !== "undefined")
-      ? document.querySelector("#characters") : null;
+    const charWrap =
+      typeof document !== "undefined"
+        ? document.querySelector("#characters")
+        : null;
     if (charWrap && !charWrap.querySelector(".char-card")) {
       for (let p = 1; p <= 2; p++) {
         const card = document.createElement("div");
@@ -1819,7 +2001,10 @@ window.Game = window.Game || {};
       heap.tabIndex = empty ? -1 : 0;
       heap.setAttribute("role", empty ? "none" : "button");
       if (!empty) {
-        heap.setAttribute("aria-pressed", i === s.selectedHeap ? "true" : "false");
+        heap.setAttribute(
+          "aria-pressed",
+          i === s.selectedHeap ? "true" : "false",
+        );
       }
 
       const head = document.createElement("div");
@@ -1873,7 +2058,13 @@ window.Game = window.Game || {};
 
   if (typeof document !== "undefined") {
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function () { Game.start(); }, { once: true });
+      document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+          Game.start();
+        },
+        { once: true },
+      );
     } else {
       Game.start();
     }

@@ -6,10 +6,12 @@
 > Task-Dateien** lesen.
 
 ## Lies zuerst
+
 - `requirements.md` → §3.2 (Zugregeln: Klassisch / 4er-Nimm / Eigene Liste) und §6 (Validierung „Zug (Eingabe)").
 - `architecture.md` → §2.1 (Zuständigkeit `nim.js`), §3.1 (JS-Regeln).
 
 ## Ausgangszustand (Code, den du vorfindest)
+
 - Task 01 ist erledigt: `index.html` lädt `nim.js → ai.js → game.js` am Ende des
   `<body>`, `style.css` ist verlinkt.
 - `nim.js` existiert und enthält (aktuell) nur:
@@ -20,10 +22,13 @@
   Platzhalter. `nim.js` hat **keine** DOM-/UI-Abhängigkeiten.
 
 ## Ziel
+
 In `nim.js` (unter `window.Nim`) zwei Funktionen implementieren:
 
 ### `Nim.parseAllowed(rule, ownList)` → erlaubte Mengen `A`
+
 Ergibt die **aufsteigend sortierte**, **deduplizierte** Liste erlaubter Nehm-Mengen:
+
 - `rule === "classic"` → **`null`** als Sonderwert (= „jede Menge 1..Haufengröße").
 - `rule === "4er"` → `[1, 2, 3, 4]`.
 - `rule === "own"` → `ownList` ist ein **Kommazahlen**-String (z. B. `"1,3,5"`):
@@ -35,13 +40,16 @@ Ergibt die **aufsteigend sortierte**, **deduplizierte** Liste erlaubter Nehm-Men
 - Unbekannte `rule` → `null`.
 
 ### `Nim.legalAmount(rule, A, amount, heapSize)` → `boolean`
+
 Gibt an, ob eine Menge `amount` aus einem Haufen der Größe `heapSize` legal ist:
+
 - `amount` muss **positive Ganzzahl ≥ 1** sein.
 - `amount ≤ heapSize`.
 - Klassisch (`A === null`): zusätzlich **immer** erlaubt (da `≤ heapSize` reicht).
 - Listen-Modi (`A` ist Array): zusätzlich **`amount ∈ A`**.
 
 ## Relevante Vorgaben (Zusammenfassung)
+
 - **Klassisch:** beliebig viele (1 bis zur Haufengröße). → `req §3.2` Punkt 1.
 - **4er-Nimm:** exakt `{1,2,3,4}`. → `req §3.2` Punkt 2.
 - **Eigene Liste:** positive Ganzzahlen, **`1` enthalten**, Duplikate raus, sortiert;
@@ -50,6 +58,7 @@ Gibt an, ob eine Menge `amount` aus einem Haufen der Größe `heapSize` legal is
 - `nim.js` bleibt **rein** (keine DOM/UI), ES2020, keine Module. → `arch §2.1`, `arch §3.1`.
 
 ## Umsetzungshinweise
+
 - Helper zum Parsen der `own`-Liste intern halten; nur `parseAllowed` und
   `legalAmount` (plus ggf. interne Helfer) unter `window.Nim` exponieren.
 - Für Klassisch `A === null` konsistent nutzen — spätere Tasks (Grundy/KI)
@@ -57,6 +66,7 @@ Gibt an, ob eine Menge `amount` aus einem Haufen der Größe `heapSize` legal is
 - Deterministisch; kein Zufall.
 
 ## Abnahmekriterien (überprüfbar – Konsole)
+
 - [ ] `Nim.parseAllowed("classic")` → `null`.
 - [ ] `Nim.parseAllowed("4er")` → `[1,2,3,4]`.
 - [ ] `Nim.parseAllowed("own","1,3,5")` → `[1,3,5]`.
@@ -70,5 +80,6 @@ Gibt an, ob eine Menge `amount` aus einem Haufen der Größe `heapSize` legal is
 - [ ] Keine Konsolenfehler; `nim.js` referenziert `document`/`window`-DOM **nicht**.
 
 ## Definition of Done
+
 `Nim.parseAllowed` und `Nim.legalAmount` sind vorhanden, decken alle drei Regeln ab,
 und die obigen Konsolen-Tests geben erwartete Werte.

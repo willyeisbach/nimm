@@ -24,8 +24,12 @@ window.Nim = window.Nim || {};
     if (typeof ownList !== "string") {
       return null;
     }
-    const tokens = ownList.split(",").map(function (t) { return t.trim(); });
-    const nonEmpty = tokens.filter(function (t) { return t.length > 0; });
+    const tokens = ownList.split(",").map(function (t) {
+      return t.trim();
+    });
+    const nonEmpty = tokens.filter(function (t) {
+      return t.length > 0;
+    });
     if (nonEmpty.length === 0) {
       return null;
     }
@@ -44,7 +48,9 @@ window.Nim = window.Nim || {};
     }
 
     // Duplikate entfernen, aufsteigend sortieren.
-    return Array.from(new Set(amounts)).sort(function (a, b) { return a - b; });
+    return Array.from(new Set(amounts)).sort(function (a, b) {
+      return a - b;
+    });
   }
 
   /**
@@ -79,7 +85,11 @@ window.Nim = window.Nim || {};
     if (typeof amount !== "number" || !Number.isInteger(amount) || amount < 1) {
       return false;
     }
-    if (typeof heapSize !== "number" || !Number.isInteger(heapSize) || heapSize < 0) {
+    if (
+      typeof heapSize !== "number" ||
+      !Number.isInteger(heapSize) ||
+      heapSize < 0
+    ) {
       return false;
     }
     if (amount > heapSize) {
@@ -95,7 +105,7 @@ window.Nim = window.Nim || {};
   // A ist `null` (klassisch) oder ein Array; als Key wird ein deterministischer
   // String genutzt, damit Array-Identität irrelevant bleibt.
   const groundyClassicCache = Object.create(null); // key: maxStone
-  const groundyListCache = Object.create(null);    // key: "A|:|-joined|maxStone"
+  const groundyListCache = Object.create(null); // key: "A|:|-joined|maxStone"
 
   // Internal helper: smallest excluded (non-negative) number of a set of values.
   function mex(reachable) {
@@ -121,8 +131,14 @@ window.Nim = window.Nim || {};
    * Ergebnis wird pro (A, maxStone) gecacht.
    */
   Nim.grundyTable = function (maxStone, A) {
-    if (typeof maxStone !== "number" || !Number.isInteger(maxStone) || maxStone < 0) {
-      throw new Error("Nim.grundyTable: maxStone muss eine nicht-negative Ganzzahl sein.");
+    if (
+      typeof maxStone !== "number" ||
+      !Number.isInteger(maxStone) ||
+      maxStone < 0
+    ) {
+      throw new Error(
+        "Nim.grundyTable: maxStone muss eine nicht-negative Ganzzahl sein.",
+      );
     }
 
     if (A === null || A === undefined) {
@@ -140,7 +156,9 @@ window.Nim = window.Nim || {};
 
     // Listen-Modus: A muss ein Array positiver, ganzzahliger Mengen sein.
     if (!Array.isArray(A) || A.length === 0) {
-      throw new Error("Nim.grundyTable: A muss null oder ein nicht-leeres Array sein.");
+      throw new Error(
+        "Nim.grundyTable: A muss null oder ein nicht-leeres Array sein.",
+      );
     }
 
     const key = A.join("|") + "#" + maxStone;
@@ -179,7 +197,9 @@ window.Nim = window.Nim || {};
     for (let i = 0; i < position.length; i++) {
       const size = position[i];
       if (typeof size !== "number" || !Number.isInteger(size) || size < 0) {
-        throw new Error("Nim.nimSum: Haufengrößen müssen nicht-negative Ganzzahlen sein.");
+        throw new Error(
+          "Nim.nimSum: Haufengrößen müssen nicht-negative Ganzzahlen sein.",
+        );
       }
       n ^= g[size];
     }
@@ -206,7 +226,7 @@ window.Nim = window.Nim || {};
     if (typeof heapSize !== "number" || heapSize < 1) {
       return false;
     }
-    const rule = (A === null || A === undefined) ? "classic" : "list";
+    const rule = A === null || A === undefined ? "classic" : "list";
     return Nim.legalAmount(rule, A, amount, heapSize);
   };
 
@@ -235,8 +255,10 @@ window.Nim = window.Nim || {};
    * Sonst: Haufen i mit target = N XOR g(n_i) und Menge a mit g(n_i - a) === target.
    */
   Nim.optimalMove = function (position, A) {
-    const maxStone = Array.isArray(position) && position.length > 0
-      ? Math.max.apply(null, position) : 0;
+    const maxStone =
+      Array.isArray(position) && position.length > 0
+        ? Math.max.apply(null, position)
+        : 0;
     const g = Nim.grundyTable(maxStone, A);
 
     const N = Nim.nimSum(position, A);
@@ -290,7 +312,9 @@ window.Nim = window.Nim || {};
       }
     }
     if (pairs.length === 0) {
-      throw new Error("Nim.randomLegal: kein legaler Zug vorhanden (Spielende).");
+      throw new Error(
+        "Nim.randomLegal: kein legaler Zug vorhanden (Spielende).",
+      );
     }
     return pairs[randomIndex(pairs)];
   };

@@ -6,10 +6,12 @@
 > beschriebenen **Codestand** — **keine anderen Task-Dateien** lesen.
 
 ## Lies zuerst
+
 - `requirements.md` → §4.4 (Muisa) und §4.1 (Optimaler Zug / Verliererposition).
 - `architecture.md` → §2.1 (`ai.js` nutzt nur `nim.js`).
 
 ## Ausgangszustand (Code, den du vorfindest)
+
 - `nim.js` ist **fertig**.
 - `ai.js` enthält bereits (aus Task 05 + 06):
   - `AI.chooseMove(position, A, who)` — behandelt **"Baxi"** und **"Ducola"**
@@ -17,6 +19,7 @@
 - Du **erweiterst** `AI.chooseMove` um den Fall `who === "Muisa"`.
 
 ## Ziel
+
 Im `AI.chooseMove`-Dispatch den Zweig **`"Muisa"`** ergänzen:
 
 - **Gesamtsteinanzahl `S = sum(position)`**:
@@ -26,6 +29,7 @@ Im `AI.chooseMove`-Dispatch den Zweig **`"Muisa"`** ergänzen:
     sonst `1` aus größtem Haufen.
 
 ## Relevante Vorgaben (Zusammenfassung)
+
 - Muisa: **> 5 Steine** → **zufälliger** legaler Zug; **≤ 5 Steine** →
   **optimal wie Baxi**. → `req §4.4`.
 - „Gesamtsteinanzahl" = Summe aller Haufen in der aktuellen Stellung.
@@ -33,6 +37,7 @@ Im `AI.chooseMove`-Dispatch den Zweig **`"Muisa"`** ergänzen:
 - `ai.js` nutzt **nur** `nim.js`; `randomLegal` kommt aus Task 04. → `arch §2.1`.
 
 ## Umsetzungshinweise
+
 - Kapsel die „wie Baxi"-Logik (Spät-Zweig) am besten in einem kleinen internen
   Helper (`optimalOrFallback`), damit Ducola und Muisa denselben Code nutzen.
 - „Zufälliger legaler Zug" nutzt `Nim.randomLegal`, der bereits
@@ -41,6 +46,7 @@ Im `AI.chooseMove`-Dispatch den Zweig **`"Muisa"`** ergänzen:
   ein unbekannter `who` wirft weiterhin einen klaren Fehler.
 
 ## Abnahmekriterien (überprüfbar – Konsole)
+
 - [ ] **Früh (S > 5)**: `AI.chooseMove([3,3], null, "Muisa")` → legaler Zug;
       mehrere Aufrufe liefern i. d. R. **unterschiedliche** `(heapIdx, amount)`
       → Zufall greift (nicht deterministisch optimal).
@@ -56,5 +62,6 @@ Im `AI.chooseMove`-Dispatch den Zweig **`"Muisa"`** ergänzen:
 - [ ] Keine Konsolenfehler; `nim.js`-Funktionen unverändert.
 
 ## Definition of Done
+
 `AI.chooseMove` behandelt **alle drei** Charaktere gemäß `req §4.2–4.4`,
 `ai.js` bleibt DOM-frei und abhängig **nur** von `nim.js`.

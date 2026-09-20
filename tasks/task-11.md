@@ -6,10 +6,12 @@
 > **keine anderen Task-Dateien** lesen.
 
 ## Lies zuerst
+
 - `requirements.md` → §5.5 (Animation: Steine blinken, dann verschwinden).
 - `architecture.md` → §3.2 (Blink-Animation, `animationend`/`setTimeout`), §3.5 (CSS `@keyframes blink`), §3.7 (Zugsperrung).
 
 ## Ausgangszustand (Code, den du vorfindest)
+
 - `index.html` + `style.css` (mit Grundstyling; ggf. bereits `.heap`, `.stone`).
 - `game.js` enthält bereits (aus Task 08–10): `Game.state` (inkl. `lock`),
   `Game.start()`, `Game.render()`, Auswahl + Validierung + Button-Enable.
@@ -20,13 +22,16 @@
 ## Ziel
 
 ### `style.css`
+
 - `@keyframes blink { 0%, 100% { opacity: 1 } 50% { opacity: 0.15 } }`
 - `.stone.blinking { animation: blink 0.6s ease-in-out 2; }`
   (≈ 3–4 Blips, insgesamt ~1.2 s; passt zu `req §5.5` „3–4 Blips / ~600–800 ms"
   pro Blip-Durchgang).
 
 ### `game.js`
+
 Implementiere `Game.animateAndRemove(heapIdx, amount)`:
+
 1. Setzt **`Game.state.lock = true`**.
 2. Markiert die **letzte `amount` Steine** des Haufens `heapIdx` mit
    `.blinking` (die zu entfernenden — „oben"/recht, je nach Rendering;
@@ -41,6 +46,7 @@ Implementiere `Game.animateAndRemove(heapIdx, amount)`:
    - Ruft den **Callback** auf (in Task 12: Zugübergabe/Sieg-Check).
 
 ### Zugsperrung
+
 - Während `Game.state.lock === true` **müssen** alle Eingabepunkte blockiert sein:
   - Button „Ziehen" disabled.
   - Haufen-Klicks ignoriert.
@@ -48,6 +54,7 @@ Implementiere `Game.animateAndRemove(heapIdx, amount)`:
 - Prüfe `lock` an **allen** Eingabestellen (Klick-Listener, Input-Handler).
 
 ## Relevante Vorgaben (Zusammenfassung)
+
 - Zu entfernende Steine **blinken** kurz (3–4 Blips / ~600–800 ms,
   CSS-Klasse `blinking`, Opacitätswechsel), danach verschwinden sie;
   währenddessen Eingabe + Button **gesperrt**. → `req §5.5`.
@@ -56,6 +63,7 @@ Implementiere `Game.animateAndRemove(heapIdx, amount)`:
   während KI-Zug / Animation; alle Eingabepunkte prüfen das Flag. → `arch §3.2/§3.7`.
 
 ## Umsetzungshinweise
+
 - Verwende `animationend` als primären Trigger und `setTimeout` als
   Safety-Net (falls `animationend` nicht feuert, z. B. bei reduzierter
   Animations-Hardware).
@@ -64,6 +72,7 @@ Implementiere `Game.animateAndRemove(heapIdx, amount)`:
 - Halte `lock`-Checks zentral — eine kleine `Game.isLocked()`-Helper.
 
 ## Abnahmekriterien (überprüfbar – Sichtprüfung/Konsole)
+
 - [ ] Zug ausführen → **nur die genommenen** Steine blinken, danach verschwinden;
       die verbleibenden Steine bleiben unverändert.
 - [ ] Während des Blinks: Button „Ziehen" **disabled**, Haufen-Klicks **ignoriert**,
@@ -77,6 +86,7 @@ Implementiere `Game.animateAndRemove(heapIdx, amount)`:
 - [ ] Keine Konsolenfehler.
 
 ## Definition of Done
+
 `Game.animateAndRemove(heapIdx, amount)` blinkt die zu entfernenden Steine,
 entfernt sie korrekt, sperrt währenddessen **alle** Eingaben und gibt danach
 `lock` frei — bereit für die Zugübergabe in Task 12.

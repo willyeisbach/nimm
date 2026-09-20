@@ -6,10 +6,12 @@
 > beschriebenen **Codestand** — **keine andere Task-Datei** lesen.
 
 ## Lies zuerst
+
 - `requirements.md` → §4.5 (KI zieht automatisch, „Denk"-Delay ~600–900 ms, Blink-Animation, Eingaben gesperrt).
 - `architecture.md` → §2.1 (`game.js` ruft `ai.js` auf), §3.1 (Zufall/Delay), §3.7 (Zugsperrung).
 
 ## Ausgangszustand (Code, den du vorfindest)
+
 - `ai.js` ist **fertig**: `AI.chooseMove(position, A, who)` → `{ heapIdx, amount }`
   für **Baxi / Ducola / Muisa** (und „Mensch" ist kein KI-Charakter).
 - `game.js` enthält bereits (aus Task 08–13): `Game.state` (inkl. `opponent`,
@@ -18,11 +20,14 @@
 - Du **erweiterst** `game.js` um das KI-Automatik-Verhalten.
 
 ## Ziel
+
 In `game.js` implementieren:
 
 ### `Game.maybeAIMove()`
+
 Ruft man **nach jedem Zustandwechsel**, an dem ein Spieler am Zug ist
 (nach `start()`, nach jeder Zugübergabe in `executeMove`):
+
 1. Bestimme den Namen des aktiven Spielers (aus `Game.state.name1`/`name2`) **und**
    ob der aktive Spieler eine **KI** ist.
    - **KI-Erkennung:** Der aktive Spieler ist KI, wenn
@@ -46,12 +51,14 @@ Ruft man **nach jedem Zustandwechsel**, an dem ein Spieler am Zug ist
    - Setze `Game.state.lock = false` (wird in `animateAndRemove` gemacht).
 
 ### Sicherstellen, dass menschliche Züge die KI auslösen
+
 - Am **Ende** von `Game.executeMove()` (nach `checkWin()` und Spielerwechsel)
   `Game.maybeAIMove()` aufrufen.
 - Am **Ende** von `Game.start()` und `Game.newGame()` `Game.maybeAIMove()`
   aufrufen (Beginn kann zufällig KI sein).
 
 ## Relevante Vorgaben (Zusammenfassung)
+
 - Zieht die KI (Spieler 2), geschieht dies **automatisch** nach kurzer Anzeige,
   dass die KI am Zug ist (Verzögerung **~600–900 ms**). → `req §4.5`.
 - Auch KI-Züge lösen die **Blink-Animation** aus. → `req §4.5`.
@@ -62,6 +69,7 @@ Ruft man **nach jedem Zustandwechsel**, an dem ein Spieler am Zug ist
   (Mensch oder KI). → `req §9`.
 
 ## Umsetzungshinweise
+
 - **Wichtig:** Vermeide unendliche Schleifen, falls **beide** Spieler KI wären —
   in diesem Projekt ist Spieler 1 immer Mensch, aber defensive: `maybeAIMove`
   sollte prüfen, dass der neu-aktive Spieler wirklich eine KI ist, bevor es
@@ -73,6 +81,7 @@ Ruft man **nach jedem Zustandwechsel**, an dem ein Spieler am Zug ist
   „Ziehen" während des Denk-Wartens ignorieren).
 
 ## Abnahmekriterien (überprüfbar – Sichtprüfung/Konsole)
+
 - [ ] Gegner **„Baxi"**, S2 am Zug (nach `start()` mit zufälligem S2-Start) →
       nach ~1 s zieht Baxi **selbst** (Blink-Animation sichtbar), danach ist S1 dran.
 - [ ] Gegen Baxi durchspielen: In einer **Gewinnposition** für Baxi setzt dieser
@@ -87,6 +96,8 @@ Ruft man **nach jedem Zustandwechsel**, an dem ein Spieler am Zug ist
 - [ ] Keine Konsolenfehler.
 
 ## Definition of Done
+
 Die KI (Baxi/Ducola/Muisa) zieht **automatisch** mit „Denk"-Delay + Blink-Animation
-+ Zugsperrung, über denselben Pfad wie menschliche Züge, und „Mensch" als Gegner
-deaktiviert das KI-Verhalten vollständig.
+
+- Zugsperrung, über denselben Pfad wie menschliche Züge, und „Mensch" als Gegner
+  deaktiviert das KI-Verhalten vollständig.

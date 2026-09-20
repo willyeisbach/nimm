@@ -1,147 +1,245 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NIMM! – Das Rosinenspiel</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <header class="app-header">
-    <h1><span class="logo">NIMM!</span><span class="tagline">Das Rosinenspiel</span></h1>
-    <button type="button" id="options-btn" class="options-btn"
-            aria-label="Optionen öffnen">⚙️</button>
-  </header>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NIMM! – Das Rosinenspiel</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>
+        <span class="logo">NIMM!</span
+        ><span class="tagline">Das Rosinenspiel</span>
+      </h1>
+      <button
+        type="button"
+        id="options-btn"
+        class="options-btn"
+        aria-label="Optionen öffnen"
+      >
+        ⚙️
+      </button>
+    </header>
 
-  <main class="app-main">
-    <p class="start-hint">👆<strong> Zieh</strong> die Rosinen aus einem Haufen — oder <strong>tippe</strong> eine an.</p>
-    <p class="rule-hint" id="rule-hint" aria-live="polite"></p>
+    <main class="app-main">
+      <p class="start-hint">
+        👆<strong> Zieh</strong> die Rosinen aus einem Haufen — oder
+        <strong>tippe</strong> eine an.
+      </p>
+      <p class="rule-hint" id="rule-hint" aria-live="polite"></p>
 
-    <!-- Issue #1: Runde wartet auf „Los!" – kein Modal, Haufen bleiben sichtbar -->
-    <div class="start-overlay" id="start-overlay" role="region" aria-label="Runde starten" hidden>
-      <p class="start-overlay-who" id="start-who"></p>
-      <!-- Issue #6: Anzeigennamen als ersten Schritt des Overlays setzen -->
-      <div class="start-names" id="start-names" hidden>
-        <label class="start-name-field">
-          <span>Dein Name</span>
-          <input type="text" id="start-name1" placeholder="z. B. Lina" autocomplete="off">
-        </label>
-        <label class="start-name-field">
-          <span>Name vom Gegner</span>
-          <input type="text" id="start-name2" placeholder="Name oder KI" autocomplete="off">
-        </label>
+      <!-- Issue #1: Runde wartet auf „Los!" – kein Modal, Haufen bleiben sichtbar -->
+      <div
+        class="start-overlay"
+        id="start-overlay"
+        role="region"
+        aria-label="Runde starten"
+        hidden
+      >
+        <p class="start-overlay-who" id="start-who"></p>
+        <!-- Issue #6: Anzeigennamen als ersten Schritt des Overlays setzen -->
+        <div class="start-names" id="start-names" hidden>
+          <label class="start-name-field">
+            <span>Dein Name</span>
+            <input
+              type="text"
+              id="start-name1"
+              placeholder="z. B. Lina"
+              autocomplete="off"
+            />
+          </label>
+          <label class="start-name-field">
+            <span>Name vom Gegner</span>
+            <input
+              type="text"
+              id="start-name2"
+              placeholder="Name oder KI"
+              autocomplete="off"
+            />
+          </label>
+        </div>
+        <button type="button" id="start-go-btn" class="start-go-btn">
+          Los! 🚀
+        </button>
       </div>
-      <button type="button" id="start-go-btn" class="start-go-btn">Los! 🚀</button>
-    </div>
 
-    <section class="stage">
-      <section class="characters" id="characters" aria-label="Spieler" aria-live="polite">
-        <!-- Spieler-Gesichter werden von game.js gerendert -->
-      </section>
+      <section class="stage">
+        <section
+          class="characters"
+          id="characters"
+          aria-label="Spieler"
+          aria-live="polite"
+        >
+          <!-- Spieler-Gesichter werden von game.js gerendert -->
+        </section>
 
-      <!-- Issue #4: „Wer ist dran?" und „letzter Zug" stehen an der
+        <!-- Issue #4: „Wer ist dran?" und „letzter Zug" stehen an der
            Charakterkarte (goldener Rahmen + Karte-Zeile/Blaube).
            Die alte Statusbox (#active-player/#last-move) ist weg. -->
-      <section class="heaps" id="heaps" aria-label="Steinhaufen">
-        <!-- Haufen werden von game.js gerendert -->
+        <section class="heaps" id="heaps" aria-label="Steinhaufen">
+          <!-- Haufen werden von game.js gerendert -->
+        </section>
       </section>
-    </section>
 
-    <section class="action-bar">
-      <div class="toolbar">
-        <button type="button" id="undo-btn" class="tool-btn" disabled>↩️ Rückgängig</button>
-        <button type="button" id="new-round-btn" class="tool-btn">Noch mal!</button>
+      <section class="action-bar">
+        <div class="toolbar">
+          <button type="button" id="undo-btn" class="tool-btn" disabled>
+            ↩️ Rückgängig
+          </button>
+          <button type="button" id="new-round-btn" class="tool-btn">
+            Noch mal!
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <div
+      class="options"
+      id="options-dialog"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="options-title"
+    >
+      <h2 id="options-title">Optionen</h2>
+
+      <!-- Issue #6: Anzeigennamen zuerst (vor Haufen/Regeln), klare Labels -->
+      <div class="opt-field">
+        <label for="opt-name1">Dein Name</label>
+        <input
+          type="text"
+          id="opt-name1"
+          value="Spieler 1"
+          autocomplete="off"
+        />
       </div>
-    </section>
-  </main>
 
-  <div class="options" id="options-dialog" hidden role="dialog" aria-modal="true" aria-labelledby="options-title">
-    <h2 id="options-title">Optionen</h2>
-
-    <!-- Issue #6: Anzeigennamen zuerst (vor Haufen/Regeln), klare Labels -->
-    <div class="opt-field">
-      <label for="opt-name1">Dein Name</label>
-      <input type="text" id="opt-name1" value="Spieler 1" autocomplete="off">
-    </div>
-
-    <div class="opt-field">
-      <label for="opt-name2">Name vom Gegner</label>
-      <input type="text" id="opt-name2" value="Spieler 2" autocomplete="off">
-    </div>
-
-    <div class="opt-field">
-      <label for="opt-max-heaps">Maximale Haufenzahl</label>
-      <input type="number" id="opt-max-heaps" min="1" step="1" value="1">
-    </div>
-
-    <fieldset class="opt-fieldset">
-      <legend>Zugregel</legend>
-      <div class="opt-radio-group">
-        <label class="opt-radio"><input type="radio" name="opt-rule" value="classic"> Klassisch</label>
-        <label class="opt-radio"><input type="radio" name="opt-rule" value="4er" checked> 4er-Nimm</label>
-        <label class="opt-radio"><input type="radio" name="opt-rule" value="own"> Eigene Liste</label>
+      <div class="opt-field">
+        <label for="opt-name2">Name vom Gegner</label>
+        <input
+          type="text"
+          id="opt-name2"
+          value="Spieler 2"
+          autocomplete="off"
+        />
       </div>
-    </fieldset>
 
-    <div class="opt-field" id="opt-own-wrap" hidden>
-      <label for="opt-own-list">Eigene Liste (kommasepariert)</label>
-      <input type="text" id="opt-own-list" placeholder="z. B. 1,3,5" disabled>
-    </div>
-
-    <div class="opt-field">
-      <label for="opt-max-stones">Maximale Steine pro Haufen</label>
-      <input type="number" id="opt-max-stones" min="1" step="1" value="20">
-    </div>
-
-    <div class="opt-field">
-      <label for="opt-min-stones">Minimale Steine pro Haufen</label>
-      <input type="number" id="opt-min-stones" min="0" step="1" value="10">
-    </div>
-
-    <fieldset class="opt-fieldset">
-      <legend>Gegner (Spieler 2)</legend>
-      <div class="opt-radio-group">
-        <label class="opt-radio"><input type="radio" name="opt-opponent" value="Mensch" checked> Mensch</label>
-        <label class="opt-radio"><input type="radio" name="opt-opponent" value="Baxi"> Baxi</label>
-        <label class="opt-radio"><input type="radio" name="opt-opponent" value="Ducola"> Ducola</label>
-        <label class="opt-radio"><input type="radio" name="opt-opponent" value="Muisa"> Muisa</label>
+      <div class="opt-field">
+        <label for="opt-max-heaps">Maximale Haufenzahl</label>
+        <input type="number" id="opt-max-heaps" min="1" step="1" value="1" />
       </div>
-    </fieldset>
 
-    <fieldset class="opt-fieldset">
-      <legend>Wer beginnt</legend>
-      <div class="opt-radio-group">
-        <label class="opt-radio"><input type="radio" name="opt-start" value="random" checked> Zufällig</label>
-        <label class="opt-radio"><input type="radio" name="opt-start" value="1"> Ich beginne</label>
-        <label class="opt-radio"><input type="radio" name="opt-start" value="2"> Gegner beginnt</label>
+      <fieldset class="opt-fieldset">
+        <legend>Zugregel</legend>
+        <div class="opt-radio-group">
+          <label class="opt-radio"
+            ><input type="radio" name="opt-rule" value="classic" />
+            Klassisch</label
+          >
+          <label class="opt-radio"
+            ><input type="radio" name="opt-rule" value="4er" checked />
+            4er-Nimm</label
+          >
+          <label class="opt-radio"
+            ><input type="radio" name="opt-rule" value="own" /> Eigene
+            Liste</label
+          >
+        </div>
+      </fieldset>
+
+      <div class="opt-field" id="opt-own-wrap" hidden>
+        <label for="opt-own-list">Eigene Liste (kommasepariert)</label>
+        <input
+          type="text"
+          id="opt-own-list"
+          placeholder="z. B. 1,3,5"
+          disabled
+        />
       </div>
-    </fieldset>
 
-    <div class="opt-field opt-checkbox-field">
-      <label class="opt-checkbox">
-        <input type="checkbox" id="opt-undo">
-        <span>Rückgängig-Button im Spiel aktivieren</span>
-      </label>
+      <div class="opt-field">
+        <label for="opt-max-stones">Maximale Steine pro Haufen</label>
+        <input type="number" id="opt-max-stones" min="1" step="1" value="20" />
+      </div>
+
+      <div class="opt-field">
+        <label for="opt-min-stones">Minimale Steine pro Haufen</label>
+        <input type="number" id="opt-min-stones" min="0" step="1" value="10" />
+      </div>
+
+      <fieldset class="opt-fieldset">
+        <legend>Gegner (Spieler 2)</legend>
+        <div class="opt-radio-group">
+          <label class="opt-radio"
+            ><input type="radio" name="opt-opponent" value="Mensch" checked />
+            Mensch</label
+          >
+          <label class="opt-radio"
+            ><input type="radio" name="opt-opponent" value="Baxi" /> Baxi</label
+          >
+          <label class="opt-radio"
+            ><input type="radio" name="opt-opponent" value="Ducola" />
+            Ducola</label
+          >
+          <label class="opt-radio"
+            ><input type="radio" name="opt-opponent" value="Muisa" />
+            Muisa</label
+          >
+        </div>
+      </fieldset>
+
+      <fieldset class="opt-fieldset">
+        <legend>Wer beginnt</legend>
+        <div class="opt-radio-group">
+          <label class="opt-radio"
+            ><input type="radio" name="opt-start" value="random" checked />
+            Zufällig</label
+          >
+          <label class="opt-radio"
+            ><input type="radio" name="opt-start" value="1" /> Ich
+            beginne</label
+          >
+          <label class="opt-radio"
+            ><input type="radio" name="opt-start" value="2" /> Gegner
+            beginnt</label
+          >
+        </div>
+      </fieldset>
+
+      <div class="opt-field opt-checkbox-field">
+        <label class="opt-checkbox">
+          <input type="checkbox" id="opt-undo" />
+          <span>Rückgängig-Button im Spiel aktivieren</span>
+        </label>
+      </div>
+
+      <p class="opt-error" id="opt-error" hidden></p>
+
+      <div class="opt-actions">
+        <button type="button" id="opt-cancel">Abbrechen</button>
+        <button type="button" id="opt-apply">Änderung übernehmen</button>
+      </div>
     </div>
 
-    <p class="opt-error" id="opt-error" hidden></p>
-
-    <div class="opt-actions">
-      <button type="button" id="opt-cancel">Abbrechen</button>
-      <button type="button" id="opt-apply">Änderung übernehmen</button>
+    <div
+      id="win-overlay"
+      class="win-overlay"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="win-title"
+      tabindex="-1"
+    >
+      <!-- Sieg-Anzeige wird von game.js gesetzt -->
     </div>
-  </div>
 
-  <div id="win-overlay" class="win-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="win-title" tabindex="-1">
-    <!-- Sieg-Anzeige wird von game.js gesetzt -->
-  </div>
+    <div id="confetti-layer" aria-hidden="true"></div>
 
-  <div id="confetti-layer" aria-hidden="true"></div>
-
-  <script src="nim.js"></script>
-  <script src="ai.js"></script>
-  <script src="game.js"></script>
-  <!-- Dependency-free Browser-E2E worker; no-op during normal top-level play. -->
-  <script src="tests/e2e-browser.js"></script>
-</body>
+    <script src="nim.js"></script>
+    <script src="ai.js"></script>
+    <script src="game.js"></script>
+    <!-- Dependency-free Browser-E2E worker; no-op during normal top-level play. -->
+    <script src="tests/e2e-browser.js"></script>
+  </body>
 </html>

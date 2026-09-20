@@ -6,11 +6,14 @@
 > Task-Dateien** lesen.
 
 ## Lies zuerst
+
 - `architecture.md` → §1.2 (keine ES-Module), §2 (Dateistruktur), §3.1 (JS-Regeln), §3.4 (Einstiegspunkt, Skript-Reihenfolge).
 - `requirements.md` → §1 (Ziel), §7 (lokale Ausführung – **hart**).
 
 ## Ausgangszustand (Code, den du vorfindest)
+
 Im Projektordner existieren **nur** Dokumente, noch **keine** Code-Dateien:
+
 ```
 nimm/
 ├─ architecture.md
@@ -18,9 +21,11 @@ nimm/
 ├─ requirements.md
 └─ tasks/
 ```
+
 Du legst in **diesem Projektordner** die fünf Code-Dateien neu an.
 
 ## Ziel
+
 Lege die 5 Dateien an und verdrahte sie so, dass `index.html` per Doppelklick in
 einem aktuellen Browser läuft — **ohne** leere Seite, **ohne** rote Konsolenfehler.
 
@@ -45,6 +50,7 @@ einem aktuellen Browser läuft — **ohne** leere Seite, **ohne** rote Konsolenf
 5. **`game.js`**: legt `window.Game = window.Game || {};` an. (Noch keine Logik.)
 
 ## Relevante Vorgaben (Zusammenfassung, damit du die Docs nicht erneut durchforsten musst)
+
 - **Kein `import`/`export`**, kein `<script type="module">` — Chromium/Edge lehnen
   ES-Module unter `file://` wegen CORS ab (sonst leere Seite). → `architecture.md §1.2`.
 - **Kein** Build, **kein** npm/Node, **keine** externen Abhängigkeiten/CDN/Web-Fonts,
@@ -55,12 +61,14 @@ einem aktuellen Browser läuft — **ohne** leere Seite, **ohne** rote Konsolenf
   keine top-level `await`). → `architecture.md §3.1`.
 
 ## Umsetzungshinweise
+
 - Alles muss per **Doppelklick** (`file://`) unter Windows/macOS/Linux laufen.
 - Halte `index.html` bewusst klein — die eigentliche Logik kommt in späteren Tasks.
 - Verwende sinnvolle, stabile `id`s, da spätere Tasks darauf aufbauen
   (`heaps`, `win-overlay`, Options-Zahnrad, Input, Button „Ziehen", Status-Block).
 
 ## Abnahmekriterien (überprüfbar)
+
 - [ ] `index.html` öffnet per **Doppelklick** (Win/mac/Linux) ohne leere Seite und
       **ohne** rote Konsolenfehler.
 - [ ] `grep -n 'type="module"\|import \|export ' index.html nim.js ai.js game.js` → **keine** Treffer.
@@ -71,5 +79,6 @@ einem aktuellen Browser läuft — **ohne** leere Seite, **ohne** rote Konsolenf
       Eingabe-Feld + „Ziehen"-Button, (verstecktes) Sieg-Overlay sind vorhanden.
 
 ## Definition of Done
+
 Fünf Dateien existieren, `index.html` läuft `file://`-tauglich, globale Anker sind
 gesetzt, und kein einziges `import`/`export`/`module`-Artefakt ist vorhanden.

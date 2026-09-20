@@ -7,11 +7,6 @@ window.Game = window.Game || {};
 
   // --- Sprachmaterial für die Charaktere (nur für Kinder, kein Grundy-Gebrausch) ---
   const AI_IDLE_FACES = { Baxi: "😼", Ducola: "😺", Muisa: "😸" };
-  const THINK_LINES = [
-    "Hmm, hmm, hmm…",
-    "Wo nimmst du's wohl zuerst weg? 🤔",
-    "Ich zähle die Rosinen…",
-  ];
   const AI_LAUGH_LINES = [
     "Hahaha! Aha, da machst du mal einen Fehler! 😆",
     "Oha, oha, oha! So nicht! 🤭",
@@ -1777,7 +1772,7 @@ window.Game = window.Game || {};
       }
     };
 
-    const onUp = function (ev) {
+    const onUp = function () {
       if (!drag || drag.committed) {
         return;
       }

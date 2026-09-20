@@ -4,6 +4,9 @@
   "description": "NIMM! – Das Rosinenspiel (lokale Vanilla-HTML/CSS/JS-App, läuft per file:// ohne Build)",
   "private": true,
   "type": "commonjs",
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
+  },
   "scripts": {
     "format": "prettier --write .",
     "format:check": "prettier --check .",

@@ -1,0 +1,6 @@
+# Abhängigkeiten (Dev-Toolchain)
+node_modules/
+
+# OS-/Editor-Artefakte
+.DS_Store
+Thumbs.db

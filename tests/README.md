@@ -35,3 +35,22 @@ node --check nim.js
 
 Die Browser-Datei heißt absichtlich nicht `*.test.js`, damit sie nicht in diese
 Node-Schleife fällt.
+
+## Dev-Toolchain (Formatierung & Linting)
+
+Die Toolchain besteht ausschließlich aus Dev-Dependencies (`package.json`,
+`package-lock.json`) und ändert die ausgelieferte `file://`-Anwendung nicht:
+
+```sh
+npm ci                    # Toolchain aus dem Lockfile reproduzieren
+npm run format:check      # Prettier-Check (HTML/CSS/Markdown/JS) über alle Dateien
+npm run format            # Prettier schreibt die Formatierung
+npm run lint              # ESLint (Flat Config): Produktion (game/nim/ai.js) + Tests
+npm run check             # format:check + lint zusammen (wie in der CI)
+npm test                  # die Node-Regressionssuite aus oben
+```
+
+Die CI (`.github/workflows/ci-pages.yml`) führt exakt diese Prüfungen in
+deterministischer Reihenfolge auf jedem Push und Pull Request an `main` aus
+(Node 22, `npm ci`): `format:check` → `lint` → `npm test`. Erst danach wird
+GitHub Pages deployed; ein roter Quality-Job blockiert den Deploy.

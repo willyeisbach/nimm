@@ -4,6 +4,10 @@ node_modules/
 # Coverage-Berichte (c8)
 coverage/
 
+# Playwright (nur lokal, bei Bedarf — NICHT in der CI)
+test-results/
+playwright-report/
+
 # OS-/Editor-Artefakte
 .DS_Store
 Thumbs.db

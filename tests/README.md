@@ -79,3 +79,25 @@ Node-Regressionstests.
 Erst danach wird GitHub Pages deployed; ein roter Quality-Job blockiert den
 Deploy. **Playwright-E2E (Issue #15) läuft bewusst NICHT in der CI** — diese
 wird lokal bei Bedarf mit `npm run test:e2e` ausgeführt.
+
+### Playwright-E2E (Issue #15 — lokal bei Bedarf)
+
+Die Browser-Suite unter `tests/e2e/` lädt die echte `index.html` per `file://`
+(kein Webserver, kein Build) und deckt dieselben Szenarien ab wie die
+dependency-freie Fallback-Suite (`tests/e2e-browser.html`, bleibt erhalten
+für Doppelklick/Offline-Abnahme):
+
+```sh
+npm run e2e:install-browsers   # einmalig: Chromium für Playwright installieren
+npm run test:e2e               # Suite starten (Chromium, workers=1, deterministisch)
+```
+
+- Keine festen Wartezeiten: Zustände werden per `expect.poll`/`waitForFunction`
+  abgefragt (Lock, Denkblase, Haufen-Feedback, Overlay).
+- Fehler erzeugen **lokale** Artefakte (Trace, Screenshot, Video
+  „retain-on-failure“ in `test-results/` + HTML-Bericht in
+  `playwright-report/`) — es gibt keine Artefakt-Uploads nach GitHub, weil
+  die Suite nicht in der CI läuft.
+- `pageerror` und relevante Konsolenausgaben werden hart gefasst.
+- Die Fallback-Suite `tests/e2e-browser.html` läuft daneben weiter (7/7) und
+  erfordert keine Installation.

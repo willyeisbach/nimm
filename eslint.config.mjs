@@ -67,8 +67,17 @@ const productionRules = {
 
 export default [
   {
-    // Globale Ausnahmen für die Dev-Toolchain selbst.
-    ignores: ["node_modules/**", "package-lock.json", "eslint.config.mjs"],
+    // Globale Ausnahmen für die Dev-Toolchain selbst + generierte Artefakte.
+    ignores: [
+      "node_modules/**",
+      "package-lock.json",
+      "eslint.config.mjs",
+      // c8-Coverage-HTML-Bericht (lokal erzeugt, git-ignoriert)
+      "coverage/**",
+      // Playwright-Artefakte (lokal bei Bedarf erzeugt, git-ignoriert)
+      "test-results/**",
+      "playwright-report/**",
+    ],
   },
 
   {

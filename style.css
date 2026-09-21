@@ -482,19 +482,28 @@ body {
   gap: 0.2rem;
 }
 
+/* Rosine: dunkles, getrocknetes Braun mit Fruchthighlight + feinen
+   Faltenringen (wie eine echte Rosine) — keine glatte "Kugel/Brause". */
 .stone {
   width: 1.5rem;
   height: 1.5rem;
-  border-radius: 48% 52% 55% 45% / 55% 48% 52% 45%;
-  background: radial-gradient(
-    circle at 32% 28%,
-    #f4b76d 0%,
-    #d98436 35%,
-    #a9541c 80%
-  );
+  border-radius: 54% 46% 49% 51% / 57% 45% 55% 43%;
+  background:
+    radial-gradient(
+      ellipse 60% 45% at 32% 26%,
+      rgba(255, 216, 150, 0.5) 0%,
+      rgba(255, 216, 150, 0) 60%
+    ),
+    repeating-radial-gradient(
+      circle at 42% 44%,
+      rgba(26, 11, 2, 0.16) 0 1px,
+      rgba(26, 11, 2, 0) 1px 4px
+    ),
+    radial-gradient(circle at 35% 30%, #96602f 0%, #6e421f 48%, #45250e 88%);
   box-shadow:
-    inset -2px -3px 5px rgba(60, 20, 0, 0.45),
-    1px 2px 3px rgba(0, 0, 0, 0.25);
+    inset -2px -3px 4px rgba(25, 10, 0, 0.55),
+    inset 1px 1px 2px rgba(255, 225, 180, 0.28),
+    1px 2px 3px rgba(0, 0, 0, 0.3);
   cursor: grab;
   transition:
     transform 0.12s ease,
@@ -525,20 +534,42 @@ body {
    Ring, damit sie sich von der blinkenden Entfernungs-Animation
    (schwingend, wird entfernt) klar unterscheiden. */
 .stone.selected {
-  background: radial-gradient(
-    circle at 32% 28%,
-    #ffe08a 0%,
-    #f5b301 45%,
-    #d98436 100%
-  );
+  /* Bleibt eine Rosine (heller, warm getönt) — die goldene Umrandung +
+     Vergrößerung tragen die Markierung, nicht ein Formwechsel. */
+  background:
+    radial-gradient(
+      ellipse 60% 45% at 32% 26%,
+      rgba(255, 236, 170, 0.6) 0%,
+      rgba(255, 236, 170, 0) 60%
+    ),
+    radial-gradient(circle at 35% 30%, #d29a55 0%, #a9702f 50%, #6e421f 90%);
   box-shadow:
-    inset -2px -3px 5px rgba(60, 20, 0, 0.35),
+    inset -2px -3px 4px rgba(60, 25, 5, 0.4),
     0 0 0 3px #f5b301,
     0 0 8px rgba(245, 179, 1, 0.55),
     1px 2px 3px rgba(0, 0, 0, 0.25);
   transform: scale(1.18);
   cursor: pointer;
   z-index: 2;
+}
+
+/* Variation: jede Rosine wirkt anders geformt und getönt — wie eine
+   echte Handvoll Rosinen. Bewusst ohne transform, damit die
+   Vergrößerung von .stone.selected und die Blink-Animation sauber
+   überlagert bleiben; Farbe über filter (eigene Dimension). */
+.heap-stones .stone:nth-child(3n + 1) {
+  border-radius: 47% 53% 55% 45% / 58% 47% 53% 42%;
+  filter: brightness(0.92) saturate(1.05);
+}
+.heap-stones .stone:nth-child(3n + 2) {
+  border-radius: 55% 45% 48% 52% / 46% 55% 45% 54%;
+  width: 1.58rem;
+}
+.heap-stones .stone:nth-child(4n) {
+  filter: brightness(1.07) sepia(0.08);
+}
+.heap-stones .stone:nth-child(7n + 3) {
+  height: 1.4rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

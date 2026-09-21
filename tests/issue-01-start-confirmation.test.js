@@ -255,8 +255,15 @@ function beginRound(Game, opponentName, startPlayer) {
     "AK4: executeMove vor Los! blockiert",
   );
   Game.confirmStart();
-  // Nach Los! darf der Mensch sofort ziehen.
+  // Nach Los! darf der Mensch sofort ziehen:
+  // Schritt 1 markiert die Menge, Schritt 2 („Nimm!") führt sie aus.
   Game.commitTap(0, 2);
+  assert.strictEqual(
+    s.selectedAmount,
+    2,
+    "AK3: die Menge muss nach Los! markiert werden",
+  );
+  Game.executeMove();
   assert.deepStrictEqual(
     s.heaps,
     [4, 4],

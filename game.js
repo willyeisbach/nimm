@@ -100,7 +100,8 @@ window.Game = window.Game || {};
     lastMove: null, // null oder { player, heapIdx, amount }
     selectedHeap: 0, // 0-basiert: ausgewählter Ziel-Haufen
     allowed: null, // erlaubte Mengen A (null = klassisch)
-    pendingAmount: null, // Issue #3: vom Haufen zugewiesene Menge, bis executeMove
+    selectedAmount: null, // Issue #17: markierte Menge (Schritt 1), bis "Nimm!"
+    pendingAmount: null, // Issue #3: übergebene Menge, bis executeMove
     lock: false, // true während Animation/KI-Zug
     awaitingStart: false, // Issue #1: Runde wartet auf „Los!", bevor der erste Zug laufen darf
     faces: null, // {1:"🙂",2:"😼"} – aktuelle Gesichter (null = idle)
@@ -386,6 +387,7 @@ window.Game = window.Game || {};
     s.allowed = window.Nim.parseAllowed(s.rule, s.ownList);
     s.selectedHeap = firstNonEmptyHeap(s.heaps);
     s.pendingAmount = null;
+    s.selectedAmount = null; // Issue #17: keine Auswahl über einen Neustart hinweg
     s.undoStack = [];
     s.faces = Game.idleFaces();
     s.bubble = {};
@@ -553,6 +555,9 @@ window.Game = window.Game || {};
 
   /**
    * Game.selectHeap(idx) → wählt den Ziel-Haufen aus (Task 10).
+   * Issue #17: ein HaufenWECHSEL verwirft eine laufende Mengenauswahl;
+   * ein (synthetischer) Folge-Klick auf denselben Haufen behält sie bei,
+   * damit sie vom Pointer-Tapp-Pfad (commitTap) nicht sofort verworfen wird.
    */
   Game.selectHeap = function (idx) {
     if (Game.isLocked()) {
@@ -568,12 +573,18 @@ window.Game = window.Game || {};
     if (s.heaps[idx] < 1) {
       return;
     }
+    const switching = s.selectedHeap !== idx;
     s.selectedHeap = idx;
     // Issue #3: reine Auswahl ohne Menge — die Menge kommt nur über commitTap
     // (Tipp/Zug). Sonst würde eine Menge eines früheren Zugs durch einen
     // Folge-Zug „mitgezogen".
     s.pendingAmount = null;
+    if (switching && s.selectedAmount !== null) {
+      s.selectedAmount = null; // Issue #17: Haufenwechsel bricht die Auswahl ab
+    }
     Game.renderSelection();
+    Game.renderAmountSelection();
+    Game.renderTakeButton();
   };
 
   /**
@@ -594,6 +605,132 @@ window.Game = window.Game || {};
         el.setAttribute("aria-pressed", selected ? "true" : "false");
       }
     });
+  };
+
+  // --- Issue #17: zweistufige Zugbestätigung (markieren → "Nimm!") ----------
+
+  /**
+   * Game.isSelecting() → boolean (Issue #17).
+   * Ist eine Menge markiert und wartet auf Bestätigung?
+   */
+  Game.isSelecting = function () {
+    const s = Game.state;
+    return (
+      s.selectedAmount !== null &&
+      s.selectedAmount > 0 &&
+      s.selectedHeap >= 0 &&
+      s.selectedHeap < s.heaps.length
+    );
+  };
+
+  /**
+   * Game.renderAmountSelection() → Issue #17, Schritt 1: markiert genau die
+   * letzten `selectedAmount` Rosinen des ausgewählten Haufens mit der
+   * "selected"-Klasse und blendet Markierungen an anderen Stellen aus.
+   * Es wird KEIN Stein entfernt — der Haufen bleibt unangetastet.
+   */
+  Game.renderAmountSelection = function () {
+    const s = Game.state;
+    const n = s.selectedAmount;
+    const heaps = document.querySelectorAll("#heaps .heap");
+    heaps.forEach(function (el) {
+      const idx = parseInt(el.dataset.heapIndex, 10);
+      const stones =
+        el.querySelectorAll && typeof el.querySelectorAll === "function"
+          ? el.querySelectorAll(".stone")
+          : null;
+      if (!stones) {
+        return;
+      }
+      const list = Array.prototype.slice.call(stones);
+      if (s.selectedHeap === idx && n > 0) {
+        const start = Math.max(0, list.length - n);
+        for (let i = 0; i < list.length; i++) {
+          list[i].classList.toggle("selected", i >= start);
+        }
+      } else {
+        list.forEach(function (st) {
+          st.classList.remove("selected");
+        });
+      }
+    });
+  };
+
+  /**
+   * Game.clearAmountSelection() → Issue #17: Markierung + Zustand zurücksetzen,
+   * ohne einen Zug zu spielen (Escape / Neuwahl / Illegal-Fall).
+   */
+  Game.clearAmountSelection = function () {
+    Game.state.selectedAmount = null;
+    Game.renderAmountSelection();
+    Game.renderTakeButton();
+  };
+
+  /**
+   * Game.takeText(amount) → kindgerechte "Nimm!"-Beschriftung (Issue #17).
+   */
+  Game.takeText = function (amount) {
+    return "Nimm " + amount + " Rosine" + (amount === 1 ? "" : "n") + "! 🍇";
+  };
+
+  /**
+   * Game.renderTakeButton() → Issue #17: sperrt/aktiviert den "Nimm!"-Button.
+   * Aktiv, wenn genau eine legale Menge für den ausgewählten Haufen markiert
+   * ist und kein Zug/keine Wartephase läuft.
+   */
+  Game.renderTakeButton = function () {
+    const btn = document.querySelector("#take-btn");
+    if (!btn) {
+      return;
+    }
+    const s = Game.state;
+    // Issue #17 (Review-F3): dieselbe Legitimitätsprüfung wie der
+    // Bestätigungspfad (takeNow → executeMove → Nim.legalAmount) — keine
+    // Reimplementierung, so dass Button-Status und Zug nie divergieren.
+    const active =
+      Game.isSelecting() &&
+      typeof window.Nim !== "undefined" &&
+      window.Nim.legalAmount(
+        s.rule,
+        s.allowed,
+        s.selectedAmount,
+        s.heaps[s.selectedHeap],
+      ) &&
+      s.awaitingStart !== true &&
+      s.lock !== true;
+    btn.disabled = !active;
+    btn.textContent =
+      s.selectedAmount === null ? "Nimm!" : Game.takeText(s.selectedAmount);
+  };
+
+  /**
+   * Game.takeNow() → Issue #17, Schritt 2: bestätigt die markierte Menge.
+   * Nur mit legaler Markierung; sonst No-op (Button-Status spiegelt das).
+   */
+  Game.takeNow = function () {
+    if (Game.state.awaitingStart === true || Game.isLocked()) {
+      return;
+    }
+    if (!Game.isSelecting()) {
+      return;
+    }
+    const s = Game.state;
+    const amount = s.selectedAmount;
+    if (
+      !window.Nim.legalAmount(
+        s.rule,
+        s.allowed,
+        amount,
+        s.heaps[s.selectedHeap],
+      )
+    ) {
+      Game.clearAmountSelection();
+      return;
+    }
+    // Bestätigung → existierender Zug-Pfad führt die markierte Menge aus.
+    Game.executeMove();
+    // executeMove() hat die Markierung konsumiert; Button-Status spiegeln.
+    Game.renderTakeButton();
   };
 
   // --- Issue #7: KI zählt die genommenen Rosinen laut in der Sprechblase mit ---
@@ -777,16 +914,28 @@ window.Game = window.Game || {};
   };
 
   /**
-   * Game.executeMove() → void
-   * Issue #3: Zug per Tipp/Ziehen am Haufen (commitTap) — die Menge kommt
-   * aus s.pendingAmount und wird hier noch einmal gegen die Zugregel geprüft.
+   * Game.executeMove() → void (Issue #17, zentrale Bestätigungsstufe)
+   * Führt den laufenden Zug aus: Die Menge kommt aus `pendingAmount`
+   * (Direkt-Commit, z. B. KI-Pfad) oder aus der markierten Auswahl
+   * (`selectedAmount`, Nutzerpfad), wird hier noch einmal gegen die
+   * Zugregel geprüft, und der Zug läuft mit Blink-Animation.
    */
   Game.executeMove = function () {
     if (Game.state.awaitingStart || Game.isLocked()) {
       return; // Issue #1: vor „Los!" läuft kein Zug (auch kein KI-Zug)
     }
     const s = Game.state;
-    const amount = s.pendingAmount;
+    // Issue #17 (Review-F1): Die menschliche Markierung (selectedAmount) hat
+    // VORRANG — sie ist die bewusste Bestätigung „Nimm!". pendingAmount ist
+    // nur der Direkt-Commit-Kanal des KI-Pfads (Issue #3/14), bei dem stets
+    // selectedAmount===null gilt. Ein veralteter KI-Rest kann die
+    // Menschen Auswahl so nie mehr entführen, und wird — egal ob der Guard
+    // durchläuft oder nicht — hier mitkonsumiert.
+    const amount =
+      s.selectedAmount !== null && s.selectedAmount !== undefined
+        ? s.selectedAmount
+        : s.pendingAmount; // KI-Direktpfad
+    s.pendingAmount = null;
     if (
       s.selectedHeap < 0 ||
       s.selectedHeap >= s.heaps.length ||
@@ -802,6 +951,7 @@ window.Game = window.Game || {};
 
     const heapIdx = s.selectedHeap;
     s.pendingAmount = null;
+    s.selectedAmount = null; // Issue #17: Markierung mit dem Zug konsumieren
 
     Game.pushHistory();
     Game.animateAndRemove(heapIdx, amount, function () {
@@ -810,29 +960,49 @@ window.Game = window.Game || {};
 
       s.selectedHeap = -1;
       s.pendingAmount = null;
+      s.selectedAmount = null; // Issue #17: keine Auswahl überleben lassen
       if (s.heaps.length === 1) {
         s.selectedHeap = 0;
       }
 
       Game.render();
+      Game.renderAmountSelection();
+      Game.renderTakeButton();
       Game.checkWin();
       Game.maybeAIMove();
     });
   };
 
   /**
-   * Game.commitTap(heapIdx, n) → void
-   * Issue #3 + #8: ein Tipp auf die n-te Rosine (bzw. Ziehen-Loslassen mit
-   * n) führt den Zug aus — aber nur wenn n legal ist. Unauffällige Mengen
-   * (nicht in der erlaubten Menge, oder größer als der Haufen) führen KEINEN
-   * Zug aus: stattdessen Feedback am Haufen (Issue #8, statt der alten
-   * Formular-Fehlermeldung).
+   * Game.commitTap(heapIdx, n) → void (Issue #17, delegiert an selectAmount)
+   * Schritt 1: n (aus Tapp/Ziehen) markieren, wenn legal.
+   * Issue #8 bleibt: illegale Mengen (nicht erlaubt oder > Haufe) führen NICHTS
+   * aus — stattdessen Feedback am Haufen (Schütteln + Blase in Kindersprache),
+   * eine laufende Markierung wird dabei verworfen.
+   * @deprecated-alias: bitte Game.selectAmount() nutzen (gleiche Semantik).
+   * Signatur bleibt (heapIdx, n) für die Bestands-Tests.
    */
   Game.commitTap = function (heapIdx, n) {
+    Game.selectAmount(heapIdx, n);
+  };
+
+  /**
+   * Game.selectAmount(heapIdx, n) → void (Issue #17)
+   * Schritt 1 der zweistufigen Bestätigung: markiert genau die letzten n
+   * Rosinen des Haufens und schaltet „Nimm!" frei — KEIN Stein wird entfernt.
+   * Illegal (nicht in der erlaubten Menge / größer als der Haufe):
+   * die Markierung wird verworfen und der Haufen meldet sich per
+   * Schütteln + Blase (Issue #8), wie früher bei illegalen Tappen.
+   */
+  Game.selectAmount = function (heapIdx, n) {
     if (Game.state.awaitingStart || Game.isLocked()) {
       return; // Issue #1: vor „Los!" läuft kein Zug
     }
     const s = Game.state;
+    // Issue #17 (Review): menschlicher Markierungspfad — hier darf KEIN
+    // Rest-Direktpfad-Mengenrest (pendingAmount, z. B. aus einem
+    // gescheiterten KI-Pfad) stecken; selectHeap hält dieselbe Invariante.
+    s.pendingAmount = null;
     if (
       typeof heapIdx !== "number" ||
       heapIdx < 0 ||
@@ -849,10 +1019,12 @@ window.Game = window.Game || {};
     }
     s.selectedHeap = heapIdx;
 
-    // --- Issue #8: Legalitätsprüfung OHNE Snap — illegale Menge ⇒ kein Zug,
-    // kurze Feedback am Haufen (Schütteln + Blase in Kindersprache).
+    // --- Issue #8: Legalitätsprüfung OHNE Snap — illegale Menge ⇒ kein
+    // Markieren, kurzer Feedback am Haufen (Schütteln + Blase in Kindersprache).
     if (n > size) {
+      Game.clearAmountSelection();
       Game.raiseHeapFeedback(heapIdx, "So viele sind nicht da!");
+      Game.renderSelection();
       return;
     }
     if (s.allowed && s.allowed.length) {
@@ -865,10 +1037,13 @@ window.Game = window.Game || {};
             return a - b;
           });
         if (!options.length) {
+          Game.clearAmountSelection();
           Game.raiseHeapFeedback(heapIdx, "So viele sind nicht da!");
+          Game.renderSelection();
           return;
         }
         const listText = options.join(", ");
+        Game.clearAmountSelection();
         Game.raiseHeapFeedback(
           heapIdx,
           "Nur " +
@@ -876,14 +1051,25 @@ window.Game = window.Game || {};
             " " +
             (options.length === 1 ? "Stein!" : "Steine!"),
         );
+        Game.renderSelection();
         return;
       }
     }
 
-    // --- Legal: sofortiger Zug mit genau dieser Menge (kein 2. Schritt).
-    s.pendingAmount = n;
+    // --- Legal (Issue #17): Menge markieren + „Nimm!" freischalten.
+    // Ein Folge-Tipp auf (ggf. anderen) Haufen ersetzt die Auswahl;
+    // der zugewiesene Haufen bleibt gültig.
+    s.selectedAmount = n;
     Game.renderSelection();
-    Game.executeMove();
+    Game.renderAmountSelection();
+    Game.renderTakeButton();
+  };
+
+  /**
+   * Game.cancelTap() → Issue #17: Auswahl abbrechen (Escape / Fehlertipp).
+   */
+  Game.cancelTap = function () {
+    Game.clearAmountSelection();
   };
 
   /**
@@ -1177,6 +1363,8 @@ window.Game = window.Game || {};
     s.heaps = snap.heaps;
     s.active = snap.active;
     s.lastMove = snap.lastMove;
+    s.pendingAmount = null;
+    s.selectedAmount = null; // Issue #17: Undo verwirft laufende Auswahl
     s.selectedHeap = s.heaps.length === 1 ? 0 : -1;
     s.bubble = {};
     s.faces = Game.idleFaces();
@@ -1545,9 +1733,9 @@ window.Game = window.Game || {};
 
     const heapsEl = document.querySelector("#heaps");
 
-    // Haufen: Auswahl per Klick/Tastatur (delegiert). Issue #3: Auswahl
-    // bleibt möglich; der ZUG läuft über den Pointer-Pfad (Tipp/Ziehen auf
-    // die Steine, s. Game.bindDrag → commitTap).
+    // Haufen: Auswahl per Klick/Tastatur (delegiert). Issue #17: Auswahl
+    // bleibt möglich; der ZUG läuft über Pointer-Pfad (Tipp/Ziehen auf die
+    // Steine → Game.selectAmount) ODER den „Nimm!"-Button (takeNow).
     if (heapsEl) {
       heapsEl.addEventListener("click", function (ev) {
         const heap = ev.target.closest(".heap");
@@ -1557,21 +1745,40 @@ window.Game = window.Game || {};
         Game.selectHeap(parseInt(heap.dataset.heapIndex, 10));
       });
 
-      // Haufen: Tastatur (Enter/Leer) wählt den fokussierten Haufen aus.
+      // Haufen: Tastatur (Enter/Leer bestättigt die Auswahl, wenn sie
+      // läuft — Issue #17 — sonst wählt den fokussierten Haufen aus).
       heapsEl.addEventListener("keydown", function (ev) {
-        if (ev.key !== "Enter" && ev.key !== " ") {
-          return;
-        }
         const heap = ev.target.closest(".heap");
         if (!heap) {
           return;
         }
-        ev.preventDefault();
-        Game.selectHeap(parseInt(heap.dataset.heapIndex, 10));
+        const idx = parseInt(heap.dataset.heapIndex, 10);
+        if (ev.key === "Enter" || ev.key === " ") {
+          ev.preventDefault();
+          if (Game.isSelecting() && Game.state.selectedHeap === idx) {
+            Game.takeNow(); // Issue #17: „Nimm!" per Enter/Leertaste
+          } else {
+            Game.selectHeap(idx);
+          }
+          return;
+        }
+        if (ev.key === "Escape") {
+          ev.preventDefault();
+          Game.cancelTap(); // Issue #17: Auswahl abbrechen
+          return;
+        }
+        // Issue #17: Ziffern 1–9 wählen die Menge am fokussierten Haufen
+        // (markieren, ohne zu ziehen) — mobile-taugliche Alternative.
+        const digit = parseInt(ev.key, 10);
+        if (digit >= 1 && digit <= 9) {
+          ev.preventDefault();
+          Game.selectAmount(idx, digit);
+        }
       });
 
       // ===== Tipp/Ziehen: Finger/Zeiger auf einen Stein, (optional) über
-      // mehrere ziehe, loslassen = Zug. (Issue #3: Tipp = sofortiger Zug.)
+      // mehrere ziehe — Issue #17: LOSLASSEN = Markieren (nicht mehr
+      // sofort Ziehen); bestätigt wird per „Nimm!"-Button bzw. Enter.
       if (typeof window.PointerEvent !== "undefined") {
         Game.bindDrag(
           heapsEl,
@@ -1585,8 +1792,29 @@ window.Game = window.Game || {};
       }
     }
 
+    // Issue #17: „Nimm!"-Bestätigungsbutton in der Aktionsleiste.
+    const takeBtn = document.querySelector("#take-btn");
+    if (takeBtn) {
+      takeBtn.addEventListener("click", function () {
+        Game.takeNow();
+      });
+    }
+
+    // Issue #17: Escape bricht eine laufende Mengenauswahl ab — auch
+    // wenn kein Haufen fokussiert ist (Desktop-Tastatur).
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key !== "Escape") {
+        return;
+      }
+      if (Game.state.selectedAmount === null) {
+        return;
+      }
+      Game.cancelTap();
+    });
+
     // Issue #3: Mengen-Leiste (+/–, Nimm!, Ziffernfeld) ist entfernt —
-    // Züge laufen am Haufen (commitTap), Auswahl per Klick/Tastatur.
+    // Züge laufen am Haufen (selectAmount), Auswahl per Klick/Tastatur,
+    // Bestätigung per „Nimm!" (Issue #17).
 
     // Rückgängig-Button.
     const undoBtn = document.querySelector("#undo-btn");
@@ -1907,11 +2135,15 @@ window.Game = window.Game || {};
           s.active = s.active === 1 ? 2 : 1;
 
           s.selectedHeap = -1;
+          s.pendingAmount = null;
+          s.selectedAmount = null; // Issue #17: keine Auswahl nach KI-Zug
           if (s.heaps.length === 1) {
             s.selectedHeap = 0;
           }
 
           Game.render();
+          Game.renderAmountSelection();
+          Game.renderTakeButton();
           Game.checkWin();
           Game.maybeAIMove();
         });
@@ -2043,6 +2275,8 @@ window.Game = window.Game || {};
 
     // 3. Auswahl + Undo + Characters
     Game.renderSelection();
+    Game.renderAmountSelection(); // Issue #17: Steine markieren?
+    Game.renderTakeButton(); // Issue #17: „Nimm!"-Status
     Game.renderUndoButton();
     Game.renderCharacters();
   };

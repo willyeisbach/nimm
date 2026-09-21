@@ -190,11 +190,15 @@ Heuristik zurück (bei Baxi: s. 4.2).
   mit dem Charakternamen (`Baxi`/`Ducola`/`Muisa`) vorbelegt und zählt als
   gesetzt. **Keine Persistenz:** nach einem Neuladen kehren die Namen zu
   den Defaults zurück (kein localStorage, keine Cookies).
-- **Zugauslösung am Haufen (Issue #3):** Ein **Tipp auf eine Rosine** oder
-  **Ziehen-Loslassen** führt unmittelbar den Zug aus (Menge = die markierten
-  Steine, gesnappt/geklemmt auf die erlaubte Menge). Es gibt **keine
-  Mengen-Leiste** (kein Ziffernfeld, +/– oder „Nimm!"-Button) mehr; Auswahl
-  bleibt per Klick/Tastatur möglich.
+- **Zugauslösung am Haufen (Issue #3, erweitert durch Issue #17):** Ein
+  **Tipp auf eine Rosine** oder **Ziehen-Loslassen** MARKIERT die Rosinnen
+  (Menge = die markierten Steine, geprüft gegen die Zugregel) — es wird
+  **nichts** entfernt. Bestätigt wird der Zug über den freigeschalteten
+  **„Nimm!“-Button** oder per **Enter** auf dem Haufen. Eine laufende
+  Auswahl kann durch einen Folge-Tipp **ersetzt** und per **Escape
+  abgebrochen** werden (Mobile: großer „Nimm!“-Button, mind. 56 px).
+  Es gibt **keine Mengen-Leiste** (kein Ziffernfeld, +/–) — Auswahl bleibt
+  per Klick/Tastatur möglich, Ziffern 1–9 wählen direkt die Menge.
 - **Options-Zahnrad** in der **oberen rechten Ecke** öffnet/schließt den
   Options-Dialog (s. 5.2).
 
@@ -206,28 +210,41 @@ Heuristik zurück (bei Baxi: s. 4.2).
   Spiel**.
 - Button **„Abbrechen"/Schließen** → Dialog schließt, Spiel läuft unverändert weiter.
 
-### 5.3 Zugauslösung und Regelprüfung (Issue #3)
+### 5.3 Zugauslösung und Regelprüfung (Issue #3, zweistufig durch Issue #17)
 
-Ein Tipp oder Ziehen-Loslassen setzt `pendingAmount` (die vom Tipppunkt
-abgeleitete, gesnappte Menge) und rührt `executeMove` aus.
-Die Menge ist **gültig** (Zug läuft), wenn **alle** Bedingungen gelten:
+**Schritt 1 — Markieren:** Ein Tipp oder Ziehen-Loslassen auf die n-te
+Rosine setzt `selectedHeap` + `selectedAmount` und **markiert genau die
+letzten `n` Rosinen** des Haufens (CSS-Klasse `stone.selected` — goldener
+Ring, vergrößert). Es verschwindet **kein** Stein. Der „Nimm!“-Button
+(`#take-btn`) wird freigeschaltet und nennt die Menge
+(„Nimm 3 Rosinen!“). Eine neue Auswahl **ersetzt** die alte; ein Haufen-
+Wechsel oder **Escape** bricht sie ab. Ziffern 1–9 am fokussierten Haufen
+wählen die Menge per Tastatur.
+
+**Schritt 2 — Bestätigen:** Klick auf „Nimm!“ (oder Enter/Leertaste auf
+dem ausgewählten Haufen) ruft `executeMove` auf. Die Menge wird dort
+noch einmal als **gültig** (Zug läuft), wenn **alle** Bedingungen gelten:
 
 - Menge ist eine **positive Ganzzahl** (`≥ 1`).
 - Menge ist in der **erlaubten Menge** der aktuellen Zugregel enthalten
   (Klassisch: `≤ Haufengröße`; 4er-Nimm/Eigene Liste: Wert ∈ `A`).
 - Menge `≤` der Größe des **treffenden Ziel-Haufens**.
 
-Gesnappte/geklemmte Werte sind legal und führen den Zug aus.
-Ungültige oder gesperrte Werte führen **keinen** Zug aus und melden sich
-**am betroffenen Haufen**: das Haufen-Element schüttelt kurz und zeigt eine
-Blase in Kindersprache an (Issue #8):
+Ungültige oder gesperrte Werte in Schritt 1 führen **nichts** aus, verworfen
+die laufende Markierung und melden sich **am betroffenen Haufen**: das
+Haufen-Element schüttelt kurz und zeigt eine Blase in Kindersprache an
+(Issue #8):
 
-- Menge > Haufengröße → „So viele sind nicht da!"
+- Menge > Haufengröße → „So viele sind nicht da!“
 - Menge nicht in der erlaubten Menge → erlaubte Zahlen nennen, z. B.
-  „Nur 1, 3 oder 5 Steine!" bzw. „Nur 1, 2, 3, 4 Steine!"
+  „Nur 1, 3 oder 5 Steine!“ bzw. „Nur 1, 2, 3, 4 Steine!“
   Die Blase verschwindet nach ~1,6 s; kein Formular-Fehlerfeld, keine
-  Alert-Dialoge, kein klemmender Lock — der nächste legale Zug ist danach
+  Alert-Dialoge, kein klemmender Lock — die nächste Auswahl ist danach
   sofort möglich.
+
+**Tastatur (mobile—tauglich + Desktop):** Ziffern 1–9 markieren,
+Enter/Leertaste bestätigt (wenn auf dem ausgewählten Haufen fokussiert),
+Escape bricht die Auswahl ab — auch wenn kein Haufen fokussiert ist.
 
 ### 5.4 Anzeige letzter Zug
 

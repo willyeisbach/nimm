@@ -10,9 +10,10 @@ Laufzeit-Abhängigkeit für den Browserlauf.
 1. `tests/e2e-browser.html` im aktuellen Chromium/Chrome/Edge öffnen, zum
    Beispiel per Doppelklick oder mit der Adresse
    `file:///ABSOLUTER/PFAD/nimm/tests/e2e-browser.html`.
-2. Im Runner müssen sechs Szenarien mit `PASS` erscheinen. Die Gesamtausgabe
-   steht zusätzlich in `#summary`; bei einem Fehler werden Szenarioname und
-   fehlende Assertion ausgegeben.
+2. Im Runner müssen die sieben Szenarien mit `PASS` erscheinen (inkl.
+   „Nimm!“-Bestätigung vom Issue #17 und „Neue Auswahl ersetzt / Escape
+   bricht ab“). Die Gesamtausgabe steht zusätzlich in `#summary`; bei einem
+   Fehler werden Szenarioname und fehlende Assertion ausgegeben.
 3. Der Runner beendet vor jedem Szenario laufende KI-/Animations-/Feedback-
    Timer, stoppt das Iframe und entfernt es anschließend. Jede Runde startet
    deshalb mit einer frischen echten Spielseite.

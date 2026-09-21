@@ -2,6 +2,8 @@
 
 // Issue #8: Unerlaubte Menge wird AM HAUFEN rückgemeldet (Schütteln +
 // Blase in Kindersprache), nicht im (seit Issue #3 entfernten) Formular.
+// Issue #17: ein Tipp/„Ziehen" MARKIERT nur noch (keine Sofort-Züge mehr);
+// illegale Mengen werden NICHT markiert.
 // Drei Fälle aus den Akzeptanzkriterien + Danach-Muss-immer-gehen-Garantie.
 const assert = require("assert");
 const fs = require("fs");
@@ -100,11 +102,14 @@ function buildDom(stoneCount) {
     }
     return null;
   };
+  const takeBtn = element({});
+  takeBtn.disabled = true;
   const generic = element();
   const document = {
     readyState: "loading",
     querySelector(selector) {
       if (selector === '#heaps .heap[data-heap-index="0"]') return heapEl;
+      if (selector === "#take-btn") return takeBtn;
       if (selector === "#heaps") {
         return element({
           querySelectorAll: function (sel) {
@@ -134,7 +139,7 @@ function buildDom(stoneCount) {
       return true;
     },
   };
-  return { document, stones, heapEl };
+  return { document, stones, heapEl, takeBtn };
 }
 
 function run(NimImpl) {
@@ -176,7 +181,13 @@ function run(NimImpl) {
     Game.state.lock = false;
     cb();
   };
-  return { Game, nim: NimImpl, heapEl: dom.heapEl, timers: firedTimers };
+  return {
+    Game,
+    nim: NimImpl,
+    heapEl: dom.heapEl,
+    takeBtn: dom.takeBtn,
+    timers: firedTimers,
+  };
 }
 
 function reset(Game, heaps, nim) {
@@ -186,6 +197,7 @@ function reset(Game, heaps, nim) {
   Game.state.opponent = "Mensch";
   Game.state.lock = false;
   Game.state.pendingAmount = null;
+  Game.state.selectedAmount = null;
   Game.state.undoStack = [];
   Game.state.lastMove = null;
   Game.state.allowed = nim.parseAllowed();
@@ -225,7 +237,7 @@ function feedbackText(heapEl) {
 
 // --- AK1: 4er-Nimm, Haufen 7, Tipp 5 → kein Stein weg, „Nur … bis 4"-Hinweis
 (function case1() {
-  const { Game, nim, heapEl } = run(ruleFour);
+  const { Game, nim, heapEl, takeBtn } = run(ruleFour);
   reset(Game, [7], nim);
   Game.commitTap(0, 5);
   assert.deepStrictEqual(
@@ -235,6 +247,16 @@ function feedbackText(heapEl) {
   );
   assert.strictEqual(Game.state.lastMove, null, "no move must be recorded");
   assert.strictEqual(Game.state.active, 1, "player turn must not change");
+  assert.strictEqual(
+    Game.state.selectedAmount,
+    null,
+    "an illegal amount must NOT be marked",
+  );
+  assert.strictEqual(
+    takeBtn.disabled,
+    true,
+    "'Nimm!' must stay disabled after an illegal tap",
+  );
   assert.ok(heapEl.classList.contains("heap--shake"), "the heap must shake");
   const text = feedbackText(heapEl);
   assert.ok(text, "a heap feedback note must appear");
@@ -249,11 +271,22 @@ function feedbackText(heapEl) {
     false,
     "no lock may remain after the feedback",
   );
-  Game.commitTap(0, 3);
+  Game.commitTap(0, 3); // Schritt 1: markiert
+  assert.strictEqual(
+    Game.state.selectedAmount,
+    3,
+    "a legal tap must mark the amount",
+  );
+  assert.strictEqual(
+    takeBtn.disabled,
+    false,
+    "'Nimm!' must be enabled on a legal mark",
+  );
+  Game.executeMove(); // Schritt 2: bestätigt
   assert.deepStrictEqual(
     Game.state.heaps,
     [4],
-    "the next legal tap must move immediately",
+    "the marked legal amount must commit on 'Nimm!'",
   );
   assert.strictEqual(
     Game.state.lastMove.amount,
@@ -264,7 +297,7 @@ function feedbackText(heapEl) {
 
 // --- AK2: Eigene Liste {1,3,5}, Haufen 7, Tipp 2 → Hinweis mit erlaubten Zahlen
 (function case2() {
-  const { Game, nim, heapEl } = run(ruleOwn);
+  const { Game, nim, heapEl, takeBtn } = run(ruleOwn);
   reset(Game, [7], nim);
   Game.commitTap(0, 2);
   assert.deepStrictEqual(Game.state.heaps, [7], "2 ∉ {1,3,5} must NOT move");
@@ -274,23 +307,39 @@ function feedbackText(heapEl) {
     0,
     "no undo snapshot must be pushed",
   );
+  assert.strictEqual(
+    Game.state.selectedAmount,
+    null,
+    "an illegal amount must NOT be marked",
+  );
+  assert.strictEqual(
+    takeBtn.disabled,
+    true,
+    "'Nimm!' must stay disabled after an illegal tap",
+  );
   const text = feedbackText(heapEl);
   assert.ok(text, "a heap feedback note must appear");
   assert.ok(
     /1/.test(text) && /3/.test(text) && /5/.test(text),
     "the feedback must list the allowed numbers 1, 3, 5, got: " + text,
   );
-  Game.commitTap(0, 5);
+  Game.commitTap(0, 5); // Schritt 1: markiert
+  assert.strictEqual(
+    Game.state.selectedAmount,
+    5,
+    "a legal listed amount must be marked",
+  );
+  Game.executeMove(); // Schritt 2: bestätigt
   assert.deepStrictEqual(
     Game.state.heaps,
     [2],
-    "a listed amount (5) must move",
+    "a marked listed amount (5) must commit on 'Nimm!'",
   );
 })();
 
 // --- AK3: Klassisch, Menge > Haufengröße → „So viele sind nicht da!"
 (function case3() {
-  const { Game, nim, heapEl } = run(ruleClassic);
+  const { Game, nim, heapEl, takeBtn } = run(ruleClassic);
   reset(Game, [3], nim);
   Game.commitTap(0, 9);
   assert.deepStrictEqual(
@@ -299,17 +348,33 @@ function feedbackText(heapEl) {
     "an oversized amount must NOT move",
   );
   assert.strictEqual(Game.state.lastMove, null, "no move must be recorded");
+  assert.strictEqual(
+    Game.state.selectedAmount,
+    null,
+    "an oversized tap must NOT be marked",
+  );
+  assert.strictEqual(
+    takeBtn.disabled,
+    true,
+    "'Nimm!' must stay disabled after an oversized tap",
+  );
   const text = feedbackText(heapEl);
   assert.ok(text, "a heap feedback note must appear");
   assert.ok(
     /nicht da/i.test(text),
     "the feedback must say the amount is not there, got: " + text,
   );
-  Game.commitTap(0, 2);
+  Game.commitTap(0, 2); // Schritt 1: markiert
+  assert.strictEqual(
+    Game.state.selectedAmount,
+    2,
+    "a legal amount must be marked",
+  );
+  Game.executeMove(); // Schritt 2: bestätigt
   assert.deepStrictEqual(
     Game.state.heaps,
     [1],
-    "a legal amount must still move",
+    "a marked legal amount must commit on 'Nimm!'",
   );
 })();
 

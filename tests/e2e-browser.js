@@ -12,9 +12,10 @@
   var scenarioNames = [
     "Initiale Wartephase vor Los!",
     "Optionen und Regelhinweis",
-    "Mensch-Start und dritter Pointer-Tap",
+    "Mensch-Start: Markieren und „Nimm!“-Bestätigung",
     "KI-Start: Denkblase, Lock und KI-Zug",
-    "Ungültiger Tap: Haufenfeedback ohne Zug",
+    "Ungültiger Tap: Haufenfeedback ohne Markierung",
+    "Neue Auswahl ersetzt / Escape bricht ab",
     "Leerer Haufen, Sieg-Overlay und Neustart",
   ];
 
@@ -192,6 +193,14 @@
       app.win.Game.state.lastMove === null,
       "Tap vor Los! erzeugt einen Zug",
     );
+    assert(
+      app.win.Game.state.selectedAmount === null,
+      "Tap vor Los! markiert keine Menge",
+    );
+    assert(
+      app.doc.querySelector("#take-btn").disabled === true,
+      "„Nimm!“ ist vor Los! nicht aktiv",
+    );
   }
 
   async function testOptionsAndRuleHint() {
@@ -241,10 +250,48 @@
       app.win.Game.state.awaitingStart === false,
       "Los! gibt Runde nicht frei",
     );
+    var takeBtn = app.doc.querySelector("#take-btn");
+    assert(takeBtn, "„Nimm!“-Button fehlt in der Aktionsleiste");
+    assert(takeBtn.disabled === true, "„Nimm!“ ist ohne Auswahl nicht aktiv");
+    // Schritt 1: Pointer-Tipp auf die dritte Rosine = MARKIEREN.
     pointerTap(app, 2, 0);
+    await sleep(80);
+    sameArray(
+      app.win.Game.state.heaps,
+      [4],
+      "Schritt 1 nimmt noch keine Rosine weg",
+    );
+    assert(
+      app.win.Game.state.selectedAmount === 3,
+      "Schritt 1 markiert nicht die Menge 3",
+    );
+    assert(
+      app.win.Game.state.lock === false,
+      "Schritt 1 darf keinen Lock setzen",
+    );
+    assert(takeBtn.disabled === false, "Schritt 1 schaltet „Nimm!“ nicht frei");
+    var marked = app.doc.querySelector(
+      '.heap[data-heap-index="0"] .stone.selected',
+    );
+    assert(
+      app.doc.querySelectorAll('.heap[data-heap-index="0"] .stone.selected')
+        .length === 3,
+      "Schritt 1 markiert nicht genau drei Rosinen",
+    );
+    assert(
+      marked && marked.getBoundingClientRect,
+      "Markierung ist ein echtes DOM-Element",
+    );
+    assert(
+      app.win.Game.state.lastMove === null,
+      "Schritt 1 erzeugt keinen Zug",
+    );
+    // Schritt 2: „Nimm!“ = ZUG.
+    var before = app.win.Game.state.heaps.slice();
+    takeBtn.click();
     assert(
       app.win.Game.state.lock === true,
-      "Pointer-Tap startet keine Entfernungsanimation",
+      "Schritt 2 startet keine Entfernungsanimation",
     );
     await waitUntil(
       function () {
@@ -256,16 +303,25 @@
     sameArray(
       app.win.Game.state.heaps,
       [1],
-      "dritter Tap nimmt nicht genau drei Rosinen",
+      "Schritt 2 nimmt nicht genau drei Rosinen",
+    );
+    assert(
+      before[0] === 4 && app.win.Game.state.heaps[0] === 1,
+      "Schritt 2 entfernt genau 3 von 4",
     );
     assert(
       app.win.Game.state.lastMove && app.win.Game.state.lastMove.player === 1,
-      "Mensch-Tap hinterlegt nicht Spieler 1 als letzten Zug",
+      "Schritt 2 hinterlegt nicht Spieler 1 als letzten Zug",
     );
     assert(
       app.win.Game.state.lastMove.amount === 3,
-      "dritter Tap hinterlegt nicht Menge 3",
+      "Schritt 2 hinterlegt nicht Menge 3",
     );
+    assert(
+      app.win.Game.state.selectedAmount === null,
+      "Schritt 2 räumt die Markierung nicht ab",
+    );
+    assert(takeBtn.disabled === true, "Schritt 2 sperrt „Nimm!“ nicht wieder");
     assert(
       app.doc.querySelectorAll(".heap .stone").length === 1,
       "DOM zeigt nicht eine verbleibende Rosine",
@@ -334,6 +390,12 @@
       app.win.Game.state.active === 1 && app.win.Game.state.lastMove === null,
       "ungültiger Tap erzeugt trotzdem einen Zug",
     );
+    assert(
+      app.win.Game.state.selectedAmount === null,
+      "ungültiger Tap markiert keine Menge",
+    );
+    var takeBtn = app.doc.querySelector("#take-btn");
+    assert(takeBtn.disabled === true, "ungültiger Tap schaltet „Nimm!“ frei");
     var heap = app.doc.querySelector('.heap[data-heap-index="0"]');
     var feedback = heap.querySelector(".heap-feedback");
     assert(
@@ -354,6 +416,65 @@
     );
   }
 
+  async function testSelectReplaceAndCancel() {
+    var app = await openConfiguredApp({
+      minStones: 4,
+      maxStones: 4,
+      rule: "4er",
+      opponent: "Mensch",
+      start: "1",
+    });
+    click(app.doc, "#start-go-btn");
+    assert(
+      app.win.Game.state.awaitingStart === false,
+      "Los! gibt Runde nicht frei",
+    );
+    var takeBtn = app.doc.querySelector("#take-btn");
+    // Markierung 3 → Markierung 1: die neue Auswahl ERSETZT die alte.
+    pointerTap(app, 2, 0);
+    await sleep(60);
+    assert(
+      app.win.Game.state.selectedAmount === 3,
+      "erst Markierung ist nicht 3",
+    );
+    assert(
+      app.doc.querySelectorAll('.heap[data-heap-index="0"] .stone.selected')
+        .length === 3,
+      "erst Markierung zeigt nicht 3 Steine",
+    );
+    pointerTap(app, 0, 0);
+    await sleep(60);
+    assert(
+      app.win.Game.state.selectedAmount === 1,
+      "zweite Markierung ersetzt nicht die erste",
+    );
+    assert(
+      app.doc.querySelectorAll('.heap[data-heap-index="0"] .stone.selected')
+        .length === 1,
+      "zweite Markierung zeigt nicht genau 1 Stein",
+    );
+    assert(
+      takeBtn.disabled === false,
+      "„Nimm!“ ist bei neuer Markierung nicht aktiv",
+    );
+    // Escape bricht die Auswahl ab.
+    app.doc.dispatchEvent(
+      new app.win.KeyboardEvent("keydown", { key: "Escape" }),
+    );
+    await sleep(60);
+    assert(
+      app.win.Game.state.selectedAmount === null,
+      "Escape bricht die Auswahl nicht ab",
+    );
+    assert(
+      app.doc.querySelectorAll(".stone.selected").length === 0,
+      "Escape räumt die Markierung nicht ab",
+    );
+    assert(takeBtn.disabled === true, "Escape sperrt „Nimm!“ nicht wieder");
+    sameArray(app.win.Game.state.heaps, [4], "Cancel entfernt keine Rosine");
+    assert(app.win.Game.state.lastMove === null, "Cancel erzeugt keinen Zug");
+  }
+
   async function testWinAndRestart() {
     var app = await openConfiguredApp({
       minStones: 1,
@@ -363,7 +484,22 @@
       start: "1",
     });
     click(app.doc, "#start-go-btn");
-    pointerTap(app, 0, 0);
+    pointerTap(app, 0, 0); // Schritt 1: letzte Rosine markieren
+    await sleep(60);
+    assert(
+      app.win.Game.state.selectedAmount === 1,
+      "letzte Rosine ist nicht markiert",
+    );
+    assert(
+      app.win.Game.state.heaps[0] === 1,
+      "Markierung entfernt die letzte Rosine sofort",
+    );
+    var takeBtn = app.doc.querySelector("#take-btn");
+    assert(
+      takeBtn.disabled === false,
+      "„Nimm!“ ist auf der letzten Rosine nicht aktiv",
+    );
+    takeBtn.click(); // Schritt 2: bestätigen
     await waitUntil(
       function () {
         return app.win.Game.state.lock === false;
@@ -414,6 +550,7 @@
     testHumanPointerTap,
     testAIStart,
     testInvalidTap,
+    testSelectReplaceAndCancel,
     testWinAndRestart,
   ];
 

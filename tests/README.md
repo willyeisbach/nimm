@@ -18,6 +18,10 @@ Laufzeit-Abhängigkeit für den Browserlauf.
    Timer, stoppt das Iframe und entfernt es anschließend. Jede Runde startet
    deshalb mit einer frischen echten Spielseite.
 
+`index.html` lädt den Worker nicht fest, sondern über `e2e-loader.js` nur im
+Iframe mit `?e2e=1`. Dadurch bleibt diese Fallback-Suite lokal per `file://`
+erhalten, während die öffentliche Pages-Seite den Testharnisch nicht ausliefert.
+
 Der Pointer-Test erzeugt einen echten `PointerEvent`-Down/Up-Pfad auf der
 gerenderten dritten Rosine. Die Optionen setzen `minSteine = maxSteine`, damit
 alle getesteten Haufen reproduzierbar sind.
@@ -77,8 +81,10 @@ deterministischer Reihenfolge aus:
 Node-Regressionstests.
 
 Erst danach wird GitHub Pages deployed; ein roter Quality-Job blockiert den
-Deploy. **Playwright-E2E (Issue #15) läuft bewusst NICHT in der CI** — diese
-wird lokal bei Bedarf mit `npm run test:e2e` ausgeführt.
+Deploy. Das Pages-Artifact enthält nur Spiel-Dateien (`index.html`,
+`style.css`, `nim.js`, `ai.js`, `game.js`, `e2e-loader.js`) — nicht Tests,
+Docs oder `package.json`. **Playwright-E2E (Issue #15) läuft bewusst NICHT
+in der CI** — diese wird lokal bei Bedarf mit `npm run test:e2e` ausgeführt.
 
 ### Playwright-E2E (Issue #15 — lokal bei Bedarf)
 

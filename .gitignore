@@ -8,6 +8,9 @@ coverage/
 test-results/
 playwright-report/
 
+# CI-Staging für GitHub Pages (nur Spiel-Dateien)
+_site/
+
 # OS-/Editor-Artefakte
 .DS_Store
 Thumbs.db

@@ -77,12 +77,14 @@ export default [
       // Playwright-Artefakte (lokal bei Bedarf erzeugt, git-ignoriert)
       "test-results/**",
       "playwright-report/**",
+      // CI-Staging für GitHub Pages (nur Spiel-Dateien)
+      "_site/**",
     ],
   },
 
   {
     // Produktions-Code: Browser + ES2022.
-    files: ["nim.js", "ai.js", "game.js"],
+    files: ["nim.js", "ai.js", "game.js", "e2e-loader.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "script",

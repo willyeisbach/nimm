@@ -242,7 +242,7 @@
     <script src="nim.js"></script>
     <script src="ai.js"></script>
     <script src="game.js"></script>
-    <!-- Dependency-free Browser-E2E worker; no-op during normal top-level play. -->
-    <script src="tests/e2e-browser.js"></script>
+    <!-- E2E-Worker nur im Test-Iframe (?e2e=1), siehe e2e-loader.js -->
+    <script src="e2e-loader.js"></script>
   </body>
 </html>

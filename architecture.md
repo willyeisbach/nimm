@@ -61,6 +61,7 @@ nimm/
 ├─ nim.js         # (1) Zugregel / erlaubte Mengen, (2) Grundy-Tabelle, (3) Legalität
 ├─ ai.js          # (4) Baxi / Ducola / Muisa (verwendet nim.js)
 ├─ game.js        # (5) Zustand, UI-Verdrahtung, Animation, Options, Einstieg
+├─ e2e-loader.js  # No-Op im Spiel; lädt tests/e2e-browser.js nur im Test-Iframe
 ├─ requirements.md
 └─ architecture.md
 ```
@@ -135,7 +136,12 @@ nimm/
   <script src="nim.js"></script>
   <script src="ai.js"></script>
   <script src="game.js"></script>
+  <script src="e2e-loader.js"></script>
   ```
+  `e2e-loader.js` ist im normalen Spiel ein No-Op. Nur wenn die Seite in
+  einem Iframe mit `?e2e=1` läuft (Fallback-Suite `tests/e2e-browser.html`),
+  wird `tests/e2e-browser.js` synchron nachgeladen. GitHub Pages liefert
+  ausschließlich die Spiel-Dateien plus diesen Loader (kein `tests/`-Baum).
 - `game.js` am Dateiende enthält:
   ```js
   window.addEventListener("DOMContentLoaded", () => {

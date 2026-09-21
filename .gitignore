@@ -1,6 +1,9 @@
 # Abhängigkeiten (Dev-Toolchain)
 node_modules/
 
+# Coverage-Berichte (c8)
+coverage/
+
 # OS-/Editor-Artefakte
 .DS_Store
 Thumbs.db

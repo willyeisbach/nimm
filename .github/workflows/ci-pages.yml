@@ -36,8 +36,14 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Run unit and regression tests
-        run: npm test
+      - name: Run unit tests (node:test)
+        run: npm run test:unit
+
+      - name: Run unit-test coverage gate (nim.js / ai.js ≥ 95%)
+        run: npm run coverage
+
+      - name: Run regression tests
+        run: for t in tests/*.test.js; do node "$t"; done
 
   deploy:
     name: Deploy GitHub Pages

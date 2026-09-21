@@ -48,9 +48,34 @@ npm run format            # Prettier schreibt die Formatierung
 npm run lint              # ESLint (Flat Config): Produktion (game/nim/ai.js) + Tests
 npm run check             # format:check + lint zusammen (wie in der CI)
 npm test                  # die Node-Regressionssuite aus oben
+npm run test:unit         # Unit-Tests für nim.js / ai.js (eingerbauter node:test-Runner)
+npm run coverage          # Unit-Tests mit Coverage-Gate (c8) — Job rot unter Schwelle
 ```
 
-Die CI (`.github/workflows/ci-pages.yml`) führt exakt diese Prüfungen in
-deterministischer Reihenfolge auf jedem Push und Pull Request an `main` aus
-(Node 22, `npm ci`): `format:check` → `lint` → `npm test`. Erst danach wird
-GitHub Pages deployed; ein roter Quality-Job blockiert den Deploy.
+### Unit-Tests & Coverage (Issue #14)
+
+- `tests/unit/nim.test.js` / `tests/unit/ai.test.js` nutzen den eingebauten
+  Node-Test-Runner (`node --test`) und prüfen Verhalten der öffentlichen
+  `window.Nim`- bzw. `window.AI`-APIs (Regelparsing, Legalität, Grundy-Tabelle,
+  NIM-Summe, optimale Züge, Charakterstrategien). Nicht-Determinismus wird
+  durch einen gesteuerten `crypto.getRandomValues`-Rückweg in der Testlaufzeit
+  reproduzierbar — der Produktionscode bleibt unverändert.
+- **Coverage-Schwelle (bewusst, keine Prozent-Show):** `npm run coverage`
+  erzwingt für `nim.js`/`ai.js` ≥ 95 % Statements, ≥ 95 % Branches, 100 %
+  Funktionen und ≥ 95 % Lines (aktuell ~99 %). Die Schwelle liegt unter dem
+  messbaren Wert, damit übliche, sinnvoll abgedeckte Änderungen nicht an
+  Rauschen brechen, aber jede echte Logiklücke (neue Funktion ohne Tests,
+  totes Zweig-Code) den Job rot macht — bei Unterschreitung ist der
+  CI-Abschluss also FALLEN, nicht still ignoriert.
+
+### CI (`.github/workflows/ci-pages.yml`)
+
+Die CI führt auf jedem Push und Pull Request an `main` (Node 22, `npm ci`) in
+deterministischer Reihenfolge aus:
+
+`format:check` → `lint` → `test:unit` → `coverage` (Gate) →
+Node-Regressionstests.
+
+Erst danach wird GitHub Pages deployed; ein roter Quality-Job blockiert den
+Deploy. **Playwright-E2E (Issue #15) läuft bewusst NICHT in der CI** — diese
+wird lokal bei Bedarf mit `npm run test:e2e` ausgeführt.

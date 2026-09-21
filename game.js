@@ -1155,7 +1155,9 @@ window.Game = window.Game || {};
 
   /**
    * Game.onGameEnd(winnerPlayer) → setzt Gesichter/Sprechblasen je nach
-   * Ausgang (KI verliert = wütend, KI gewinnt = genervt, Mensch gewinnt = Feier).
+   * Ausgang. Issue #18: nur Baxi wird bei einer Niederlage wütend 😠;
+   * Ducola/Muisa bleiben freundlich (😺/😸) — bei einem Sieg feiert/ärgert
+   * sich jede KI wie bisher (😤).
    */
   Game.onGameEnd = function (winnerPlayer) {
     const s = Game.state;
@@ -1163,7 +1165,15 @@ window.Game = window.Game || {};
     s.faces = Game.idleFaces();
     if (winnerPlayer === 1) {
       s.faces[1] = "🥳";
-      s.faces[2] = Game.isAI(s.opponent) ? "😠" : "😅";
+      if (Game.isAI(s.opponent)) {
+        // Issue #18: nur Baxi wird bei einer Niederlage wütend;
+        // Ducola/Muisa behalten ihr freundliches Idle-Gesicht.
+        if (s.opponent === "Baxi") {
+          s.faces[2] = "😠";
+        }
+      } else {
+        s.faces[2] = "😅";
+      }
       if (Game.isAI(s.opponent)) {
         s.bubble[2] = randomInList(AI_LOSE_LINES);
       } else {
@@ -2109,13 +2119,21 @@ window.Game = window.Game || {};
       }
 
       try {
-        // Laune der KI, bevor sie zieht (NIM-Summe vOR ihrem Zug):
-        //   N ≠ 0 → Gewinnposition:
+        // Laune der KI, bevor sie zieht (NIM-Summe vOR ihrem Zug) – Issue #18:
+        // NUR Baxi spielt Laune; Ducola/Muisa behalten ihr freundliches
+        // Idle-Gesicht (😺/😸), egal wie die Stellung steht.
+        //   Baxi, N ≠ 0 → Gewinnposition:
         //     Mensch hat soeben gezogen → er ihr die Gewinnposition gelassen
         //     → sie lacht höhnisch 😆.
-        //   N = 0 → Verliererposition: sie KANN nicht mehr gewinnen
+        //   Baxi, N = 0 → Verliererposition: sie KANN nicht mehr gewinnen
         //     → sie wird wütend und murrt 😠 (Willys Kern-Wunsch).
-        if (
+        //   Ducola/Muisa: nach der „denkt…"-Phase sofort zurück auf das
+        //     freundliche Idle-Gesicht — sie spielen keine Laune.
+        if (s.opponent !== "Baxi") {
+          Game.setFace(2, Game.idleFaces()[2]);
+          Game.setBubble(2, "");
+          Game.renderCharacters();
+        } else if (
           typeof window.Nim !== "undefined" &&
           typeof window.Nim.nimSum === "function"
         ) {

@@ -374,13 +374,19 @@ wie ein Spiel anfühlen, nicht wie ein Formular.
   Mengen-Leiste (Ziffernfeld, +/–, „Nimm!"-Button) ist als Formular-Fallback
   entfernt.
 - **Charaktere mit Gesichtern & Sprechblasen:** Beide Spieler erscheinen als
-  Karten mit Emoji-Gesicht, Name, Rolle und Sprechblase. Die KI reagiert:
-  - „denkt…" (geduldig, ~0,6–0,9 s),
-  - **lacht höhnisch**, wenn der Mensch in eine Verliererposition gezogen
-    hat (NIM-Summe ≠ 0),
-  - **ist wütend/genervt**, wenn sie selbst in einer Verliererposition steht
-    und NICHT mehr gewinnen kann,
-  - **feiert/ist sauer** beim Spielende je nach Ausgang.
+  Karten mit Emoji-Gesicht, Name, Rolle und Sprechblase. Die KI reagiert
+  (Issue #18: nur Baxi spielt Laune, Ducola/Muisa bleiben immer freundlich):
+  - „denkt…“ (geduldig, ~0,6–0,9 s) mit Nachdenk-Gesicht 🤔 — für alle
+    drei KI (Baxi/Ducola/Muisa),
+  - **Nur Baxi:**
+    - **lacht höhnisch** (😆), wenn der Mensch in eine Gewinnposition für
+      die KI gezogen hat (NIM-Summe ≠ 0),
+    - **ist wütend/genervt** (😠), wenn die KI selbst in einer
+      Verliererposition steht und NICHT mehr gewinnen kann,
+  - **Ducola/Muisa:** unabhängig von der Stellung immer ihr freundliches
+    Idle-Gesicht (😺/😸), ohne Laune-Zeilen — Ausnahme: Spielende,
+  - **Spielende:** KI verliert → Baxi wütend (😠), Ducola/Muisa freundlich;
+    KI gewinnt → alle feiern/ärgern sich (😤).
     Gesichter werden DOM-seitig gesetzt (kein Grundy-Jargon, Kindersprache).
 - **Rückgängig-Button:** Aktivierbar im Options-Dialog (Checkbox, Default
   aus). Setzt den letzten Menschenzug (im KI-Modus plus die KI-Antwort)

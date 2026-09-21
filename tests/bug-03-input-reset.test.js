@@ -346,11 +346,11 @@ const ruleClassic = {
     "the tagged amount must be stored",
   );
   assert.ok(
-    stones.slice(2).every((st) => st.classList.contains("selected")),
-    "the LAST THREE stones must be marked",
+    stones.slice(0, 3).every((st) => st.classList.contains("selected")),
+    "the FIRST THREE stones must be marked (left-anchored)",
   );
   assert.ok(
-    stones.slice(0, 2).every((st) => !st.classList.contains("selected")),
+    stones.slice(3).every((st) => !st.classList.contains("selected")),
     "the remaining stones must NOT be marked",
   );
   assert.strictEqual(
@@ -633,8 +633,8 @@ const ruleClassic = {
     "Ziffer-Eingabe muss „Nimm!“ freischalten",
   ),
     assert.ok(
-      stones.slice(2).every((st) => st.classList.contains("selected")),
-      "Tastatur-Markierung betrifft die letzten 3 Steine",
+      stones.slice(0, 3).every((st) => st.classList.contains("selected")),
+      "Tastatur-Markierung betrifft die ersten 3 Steine (linksbündig)",
     ));
   // Enter auf dem selben Haufen bestätigt (Step 2).
   fireKey("Enter");

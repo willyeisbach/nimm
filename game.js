@@ -625,9 +625,12 @@ window.Game = window.Game || {};
 
   /**
    * Game.renderAmountSelection() → Issue #17, Schritt 1: markiert genau die
-   * letzten `selectedAmount` Rosinen des ausgewählten Haufens mit der
+   * ERSTEN `selectedAmount` Rosinen (links) des ausgewählten Haufens mit der
    * "selected"-Klasse und blendet Markierungen an anderen Stellen aus.
-   * Es wird KEIN Stein entfernt — der Haufen bleibt unangetastet.
+   * Linksbündig wie die Tipp-Position (n-te Rosine = n nehmen) und wie die
+   * Entfernungs-Animation — so ist Tipp, Markierung und Entfernen
+   * räumlich synchron. Es wird KEIN Stein entfernt — der Haufen bleibt
+   * unangetastet.
    */
   Game.renderAmountSelection = function () {
     const s = Game.state;
@@ -644,9 +647,8 @@ window.Game = window.Game || {};
       }
       const list = Array.prototype.slice.call(stones);
       if (s.selectedHeap === idx && n > 0) {
-        const start = Math.max(0, list.length - n);
         for (let i = 0; i < list.length; i++) {
-          list[i].classList.toggle("selected", i >= start);
+          list[i].classList.toggle("selected", i < n);
         }
       } else {
         list.forEach(function (st) {
@@ -831,7 +833,11 @@ window.Game = window.Game || {};
       return;
     }
     const stones = heapEl.querySelectorAll(".stone");
-    const targets = Array.prototype.slice.call(stones).slice(-amount);
+    // Linksbündig: die ERSTEN `amount` Steine blinken/verschwinden —
+    // dieselben, die die Tipp-Markierung (n-te Rosine = n nehmen) und die
+    // Auswahl-Markierung links zeigen. Sonst wählt man links, aber rechts
+    // visualisiert/entfernt.
+    const targets = Array.prototype.slice.call(stones).slice(0, amount);
     targets.forEach(function (el) {
       el.classList.add("blinking");
       el.classList.remove("marked");
@@ -988,8 +994,10 @@ window.Game = window.Game || {};
 
   /**
    * Game.selectAmount(heapIdx, n) → void (Issue #17)
-   * Schritt 1 der zweistufigen Bestätigung: markiert genau die letzten n
-   * Rosinen des Haufens und schaltet „Nimm!" frei — KEIN Stein wird entfernt.
+   * Schritt 1 der zweistufigen Bestätigung: markiert genau die ERSTEN n
+   * Rosinen (links) des Haufens und schaltet „Nimm!" frei — KEIN Stein wird
+   * entfernt. (Die Tipp-Position zählt links; Tipp, Markierung und
+   * Entfernen-Animation bleiben so räumlich synchron.)
    * Illegal (nicht in der erlaubten Menge / größer als der Haufe):
    * die Markierung wird verworfen und der Haufen meldet sich per
    * Schütteln + Blase (Issue #8), wie früher bei illegalen Tappen.

@@ -271,9 +271,10 @@ function run(moveCase) {
   const doubleTapBlocked = s.heaps[0] === 6;
   const lockBlocked = s.lock === true;
 
-  // Animation abschließen: animationend auf dem betroffenen Stein feuern.
+  // Animation abschließen: animationend auf einem Ziel-Stein feuern
+  // (Targets sind die ERSTEN `amount` Steine, linksbündig).
   // Danach alle ausstehenden Zeitgeber (Zähl-Kette, Backstop) durcharbeiten.
-  const firstTarget = stones[stones.length - moveCase.amount];
+  const firstTarget = stones[0];
   if (firstTarget) {
     firstTarget.fire("animationend");
   }

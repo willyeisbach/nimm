@@ -210,7 +210,8 @@ assert.strictEqual(
   "normal motion must install one safety timer",
 );
 const normalTimer = timers[0];
-stones[1].dispatch("animationend");
+// Ziel-Steine sind jetzt linksbündig (die ersten `amount`), nicht mehr die letzten:
+stones[0].dispatch("animationend");
 assert.strictEqual(
   Game.state.heaps[0],
   1,

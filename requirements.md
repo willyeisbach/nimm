@@ -214,8 +214,9 @@ Heuristik zurück (bei Baxi: s. 4.2).
 
 **Schritt 1 — Markieren:** Ein Tipp oder Ziehen-Loslassen auf die n-te
 Rosine setzt `selectedHeap` + `selectedAmount` und **markiert genau die
-letzten `n` Rosinen** des Haufens (CSS-Klasse `stone.selected` — goldener
-Ring, vergrößert). Es verschwindet **kein** Stein. Der „Nimm!“-Button
+ersten `n` Rosinen (linksbündig, wie die Tipp-Position)** des Haufens
+(CSS-Klasse `stone.selected` — goldener Ring, vergrößert). Es verschwindet
+**kein** Stein. Der „Nimm!“-Button
 (`#take-btn`) wird freigeschaltet und nennt die Menge
 („Nimm 3 Rosinen!“). Eine neue Auswahl **ersetzt** die alte; ein Haufen-
 Wechsel oder **Escape** bricht sie ab. Ziffern 1–9 am fokussierten Haufen
